@@ -21,7 +21,7 @@ public class CheckupRestController {
     /**
      * Check the system
      * Does Zeebe declare a container? A Type storage?
-     * Does Elasticsearch as repository for each component like Operate?
+     * Does Elasticsearch as repository for each component like OperateClient?
      * @return
      */
     @GetMapping(value = "/api/checkup/check", produces = "application/json")

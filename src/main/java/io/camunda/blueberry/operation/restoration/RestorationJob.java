@@ -1,15 +1,21 @@
 package io.camunda.blueberry.operation.restoration;
 
+import io.camunda.blueberry.operation.OperationLog;
+
 public class RestorationJob {
 
+    OperationLog operationLog;
     // Restore this backupId
     public RestorationJob(Long backupId) {
-
+        OperationLog operationLog = new OperationLog();
     }
     /** run asynchronously
      *
      */
     public void restoration() {
+        long beginTime = System.currentTimeMillis();
+        operationLog.info("Start Restoration");
+
         // Scale down Zeebe
 
         // create one pod per cluster size, and start it
@@ -19,5 +25,7 @@ public class RestorationJob {
         // Finish? Then stop all restoration pod
 
         // scale up Zeebe
+
+        operationLog.info("End of Restoration in "+(System.currentTimeMillis()-beginTime)+" ms");
     }
 }

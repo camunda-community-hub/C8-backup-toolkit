@@ -11,7 +11,7 @@ public class CheckupManager {
     /**
      * Check the system
      * Does Zeebe declare a container? A Type storage?
-     * Does Elasticsearch as repository for each component like Operate?
+     * Does Elasticsearch as repository for each component like OperateClient?
      *
      * @return
      */
