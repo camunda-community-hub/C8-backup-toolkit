@@ -1,7 +1,5 @@
 package io.camunda.blueberry.operation;
 
-import io.camunda.blueberry.client.OperateClient;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

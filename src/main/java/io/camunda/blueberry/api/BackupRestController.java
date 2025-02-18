@@ -2,6 +2,7 @@ package io.camunda.blueberry.api;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,12 +18,14 @@ public class BackupRestController {
     public Map<String, Object> startBackup(@RequestParam(name = "backupId") Long backupId) {
         // Return the backupId if no one was given
         // The backup is started asynchronously
-        return Map.of("backup", 1L);
+
+        // if a backup is already in progress, will return a status "ALREADYRUNNING"
+        return Map.of("backupId", 1L, "status", "STARTED");
     }
 
     @GetMapping(value = "/api/backup/monitor", produces = "application/json")
     public Map<String, Object> monitorBackup(@RequestParam(name = "backupId") Long backupId) {
-        return Map.of("backup", 1L);
+        return Map.of("backupId", 1L);
     }
 
     /**
@@ -32,6 +35,8 @@ public class BackupRestController {
      */
     @GetMapping(value = "/api/backup/list", produces = "application/json")
     public List<Map<String, Object>> listBackup() {
-        return Collections.emptyList();
+        List<Map<String,Object>> listBackup = new ArrayList<>();
+        listBackup.add(Map.of("backupId", 1L, "status", "OK", "backupDate", "2025-03-12"));
+        return listBackup;
     }
 }

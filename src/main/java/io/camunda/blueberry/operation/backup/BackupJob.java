@@ -1,7 +1,7 @@
 package io.camunda.blueberry.operation.backup;
 
 import io.camunda.blueberry.client.ElasticsearchAPI;
-import io.camunda.blueberry.client.OperateClient;
+import io.camunda.blueberry.client.OperateAPI;
 import io.camunda.blueberry.client.OptimizeAPI;
 import io.camunda.blueberry.client.TaskListAPI;
 import io.camunda.blueberry.operation.OperationLog;
@@ -12,18 +12,18 @@ import io.camunda.zeebe.client.ZeebeClient;
  */
 public class BackupJob {
 
-    private OperateClient operateClient;
+    private OperateAPI operateAPI;
     private TaskListAPI taskListAPI;
     private OptimizeAPI optimizeClient;
     private ElasticsearchAPI elasticsearchAPI;
     private ZeebeClient zeebeClient;
 
-    protected BackupJob(OperateClient operateClient,
+    protected BackupJob(OperateAPI operateAPI,
                         TaskListAPI taskListAPI,
                         OptimizeAPI optimizeClient,
                         ElasticsearchAPI elasticsearchAPI,
                         ZeebeClient zeebeClient) {
-        this.operateClient = operateClient;
+        this.operateAPI = operateAPI;
         this.taskListAPI = taskListAPI;
         this.optimizeClient = optimizeClient;
         this.elasticsearchAPI = elasticsearchAPI;
@@ -41,7 +41,9 @@ public class BackupJob {
         operationLog.info("Start Backup");
 
         // backup Operate
-
+        if (operateAPI.isOperateExist()) {
+            operationLog.info("Start Operate Backup");
+        }
         // backup TaskList
         if (taskListAPI.isTaskListExist()) {
             // Srart the backup
