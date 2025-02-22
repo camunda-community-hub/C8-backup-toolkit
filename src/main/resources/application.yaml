@@ -1,0 +1,42 @@
+blueberry:
+
+# Visit https://github.com/camunda-community-hub/spring-zeebe/?tab=readme-ov-file#connect-to-zeebe
+
+# -------------------- Self Manage
+camunda:
+  client:
+    mode: selfmanaged
+    zeebe:
+      enabled: true
+      gatewayUrl: http://localhost:26500
+      preferRestOverGrpc: false
+      executionThreads: 200
+      defaults:
+        maxJobsActive: 58
+
+  tasklist:
+    enabled: false
+operate:
+  client:
+    profile: simple
+    enabled: true
+    base-url: http://localhost:8081
+    session-timeout: PT10M
+    username: demo
+    password: demo
+
+
+server:
+  port: 9081
+logging.level.root: INFO
+
+
+# return message with BAD_REQUEST to the client
+server.error.include-message: always
+
+# Spring Boot Configuration
+spring.application.name: Blueberry
+
+spring:
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration

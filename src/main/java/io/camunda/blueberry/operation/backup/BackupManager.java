@@ -1,7 +1,8 @@
 package io.camunda.blueberry.operation.backup;
 
 
-import org.rocksdb.BackupInfo;
+import io.camunda.blueberry.exception.BackupStartException;
+import io.camunda.blueberry.exception.OperationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -14,24 +15,37 @@ import java.util.List;
 @Component
 public class BackupManager {
 
-    public void startBackup(Long backupId)
-    {
+    private BackupJob backupJob;
+
+    public void startBackup(Long backupId) throws OperationException {
         // Verify first is there is not already a backup in progress
-
+        if (backupJob != null && backupJob.getJobStatus() != BackupJob.JOBSTATUS.COMPLETED)
+            throw new BackupStartException("Job already in progress[" + backupJob.getBackupId() + "]", backupJob.getBackupId());
         // start a backup, asynchrously
-    }
 
-    public class BackupInfo{
-        public String id;
-        public Date dateBackup;
     }
 
     /**
      * Return the list of all backups visible on the platform
+     *
      * @return
      */
     public List<BackupInfo> getListBackup() {
         return Collections.emptyList();
     }
 
+    /**
+     * If a job is started, then a backupJob exist.
+     * If the backup is terminated, then the backypJob is still available, with a status "TERMINATED"
+     *
+     * @return
+     */
+    public BackupJob getBackupJob() {
+        return backupJob;
+    }
+
+    public class BackupInfo {
+        public String id;
+        public Date dateBackup;
+    }
 }

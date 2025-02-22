@@ -5,12 +5,14 @@ import io.camunda.blueberry.operation.OperationLog;
 public class RestorationJob {
 
     OperationLog operationLog;
+
     // Restore this backupId
     public RestorationJob(Long backupId) {
         OperationLog operationLog = new OperationLog();
     }
-    /** run asynchronously
-     *
+
+    /**
+     * run asynchronously
      */
     public void restoration() {
         long beginTime = System.currentTimeMillis();
@@ -26,6 +28,6 @@ public class RestorationJob {
 
         // scale up Zeebe
 
-        operationLog.info("End of Restoration in "+(System.currentTimeMillis()-beginTime)+" ms");
+        operationLog.info("End of Restoration in " + (System.currentTimeMillis() - beginTime) + " ms");
     }
 }

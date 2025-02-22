@@ -12,11 +12,14 @@ import io.camunda.zeebe.client.ZeebeClient;
  */
 public class BackupJob {
 
-    private OperateAPI operateAPI;
-    private TaskListAPI taskListAPI;
-    private OptimizeAPI optimizeClient;
-    private ElasticsearchAPI elasticsearchAPI;
-    private ZeebeClient zeebeClient;
+    OperationLog operationLog;
+    private final OperateAPI operateAPI;
+    private final TaskListAPI taskListAPI;
+    private final OptimizeAPI optimizeClient;
+    private final ElasticsearchAPI elasticsearchAPI;
+    private final ZeebeClient zeebeClient;
+    private JOBSTATUS jobStatus = JOBSTATUS.PLANNED;
+    private long backupId;
 
     protected BackupJob(OperateAPI operateAPI,
                         TaskListAPI taskListAPI,
@@ -30,16 +33,26 @@ public class BackupJob {
         this.zeebeClient = zeebeClient;
     }
 
-    OperationLog operationLog;
+    public JOBSTATUS getJobStatus() {
+        return jobStatus;
+    }
 
-    public OperationLog getStatus() {
+    public OperationLog getLog() {
         return operationLog;
     }
 
-    public void backup() {
+    public long getBackupId() {
+        return backupId;
+    }
+
+    /**
+     * Start a backup
+     */
+    public void backup(long backupId) {
         long beginTime = System.currentTimeMillis();
         operationLog.info("Start Backup");
-
+        jobStatus = JOBSTATUS.INPROGRESS;
+        this.backupId = backupId; // calculate a new backup
         // backup Operate
         if (operateAPI.isOperateExist()) {
             operationLog.info("Start Operate Backup");
@@ -64,6 +77,8 @@ public class BackupJob {
         // scale up Zeebe
 
         operationLog.info("End of backup in " + (System.currentTimeMillis() - beginTime) + " ms");
-
+        jobStatus = JOBSTATUS.COMPLETED;
     }
+
+    public enum JOBSTATUS {PLANNED, INPROGRESS, COMPLETED, FAILED}
 }
