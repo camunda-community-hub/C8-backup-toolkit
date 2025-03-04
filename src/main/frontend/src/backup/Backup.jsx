@@ -53,7 +53,7 @@ class Backup extends React.Component {
 
                 {this.state.backup.status !== '' ? (
                     <div className="alert alert-info" style={{margin: "10px 10px 10px 10px"}}>
-                        Backup in progress {this.state.backup.backupId}
+                        {this.state.backup.status} {this.state.backup.backupId}
                     </div>
                 ) : <div/>
                 }

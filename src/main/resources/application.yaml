@@ -1,6 +1,11 @@
 blueberry:
+  optimizeurl:
+  operateurl: http://mocalhost:8081
+  tasklisturl: http://localhost:8082
+  zeebeactuatorurl: http://localhost:9600
 
-# Visit https://github.com/camunda-community-hub/spring-zeebe/?tab=readme-ov-file#connect-to-zeebe
+server:
+  port: 9081
 
 # -------------------- Self Manage
 camunda:
@@ -26,8 +31,7 @@ operate:
     password: demo
 
 
-server:
-  port: 9081
+
 logging.level.root: INFO
 
 

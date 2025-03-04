@@ -1,11 +1,13 @@
 package io.camunda.blueberry.operation.backup;
 
 
+import io.camunda.blueberry.client.*;
 import io.camunda.blueberry.exception.BackupStartException;
 import io.camunda.blueberry.exception.OperationException;
+import io.camunda.blueberry.operation.OperationLog;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -17,12 +19,36 @@ public class BackupManager {
 
     private BackupJob backupJob;
 
-    public void startBackup(Long backupId) throws OperationException {
+    @Autowired
+    OperateAPI operateAPI;
+    @Autowired
+    TaskListAPI taskListAPI;
+    @Autowired
+    OptimizeAPI optimizeAPI;
+    @Autowired
+    ZeebeAPI zeebeAPI;
+
+    public synchronized void startBackup(Long backupId) throws OperationException {
         // Verify first is there is not already a backup in progress
         if (backupJob != null && backupJob.getJobStatus() != BackupJob.JOBSTATUS.COMPLETED)
             throw new BackupStartException("Job already in progress[" + backupJob.getBackupId() + "]", backupJob.getBackupId());
         // start a backup, asynchrously
-
+        backupJob = new BackupJob(operateAPI, taskListAPI, optimizeAPI, zeebeAPI, new OperationLog());
+        if (backupId==null) {
+            // calculate a new backup ID
+            long maxId = 0;
+            try {
+                List<BackupInfo> listBackup = getListBackup();
+                for (BackupInfo info : listBackup) {
+                    if (info.backupId > maxId)
+                        maxId = info.backupId;
+                }
+            }catch(Exception e) {
+                // Ok, we try - should not in the futur
+            }
+            backupId=maxId+1;
+        }
+        backupJob.backup(backupId);
     }
 
     /**
@@ -30,8 +56,8 @@ public class BackupManager {
      *
      * @return
      */
-    public List<BackupInfo> getListBackup() {
-        return Collections.emptyList();
+    public List<BackupInfo> getListBackup() throws OperationException {
+        return zeebeAPI.getListBackup();
     }
 
     /**
@@ -44,8 +70,5 @@ public class BackupManager {
         return backupJob;
     }
 
-    public class BackupInfo {
-        public String id;
-        public Date dateBackup;
-    }
+
 }

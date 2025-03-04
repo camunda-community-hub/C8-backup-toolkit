@@ -1,9 +1,6 @@
 package io.camunda.blueberry.operation.backup;
 
-import io.camunda.blueberry.client.ElasticsearchAPI;
-import io.camunda.blueberry.client.OperateAPI;
-import io.camunda.blueberry.client.OptimizeAPI;
-import io.camunda.blueberry.client.TaskListAPI;
+import io.camunda.blueberry.client.*;
 import io.camunda.blueberry.operation.OperationLog;
 import io.camunda.zeebe.client.ZeebeClient;
 
@@ -15,22 +12,18 @@ public class BackupJob {
     OperationLog operationLog;
     private final OperateAPI operateAPI;
     private final TaskListAPI taskListAPI;
-    private final OptimizeAPI optimizeClient;
-    private final ElasticsearchAPI elasticsearchAPI;
-    private final ZeebeClient zeebeClient;
+    private final OptimizeAPI optimizeAPI;
+    private final ZeebeAPI zeebeAPI;
     private JOBSTATUS jobStatus = JOBSTATUS.PLANNED;
     private long backupId;
 
-    protected BackupJob(OperateAPI operateAPI,
-                        TaskListAPI taskListAPI,
-                        OptimizeAPI optimizeClient,
-                        ElasticsearchAPI elasticsearchAPI,
-                        ZeebeClient zeebeClient) {
+    protected BackupJob(OperateAPI operateAPI, TaskListAPI taskListAPI, OptimizeAPI optimizeAPI,
+                         ZeebeAPI zeebeAPI, OperationLog operationLog) {
         this.operateAPI = operateAPI;
         this.taskListAPI = taskListAPI;
-        this.optimizeClient = optimizeClient;
-        this.elasticsearchAPI = elasticsearchAPI;
-        this.zeebeClient = zeebeClient;
+        this.optimizeAPI = optimizeAPI;
+        this.zeebeAPI = zeebeAPI;
+        this.operationLog = operationLog;
     }
 
     public JOBSTATUS getJobStatus() {
@@ -55,26 +48,41 @@ public class BackupJob {
         this.backupId = backupId; // calculate a new backup
         // backup Operate
         if (operateAPI.isOperateExist()) {
-            operationLog.info("Start Operate Backup");
+            operateAPI.backup(backupId, operationLog);
         }
         // backup TaskList
         if (taskListAPI.isTaskListExist()) {
-            // Srart the backup
+            taskListAPI.backup(backupId, operationLog);
         }
         // backup Optimize
-
+        if (optimizeAPI.isOptimizeExist()) optimizeAPI.backup(backupId, operationLog);
 
         // Wait end of backup Operate, TaskList, Optimize, Zeebe
+        if (operateAPI.isOperateExist()) {
+            operateAPI.monitorBackup(backupId, operationLog);
+        }
+        if (taskListAPI.isTaskListExist()) {
+            taskListAPI.monitorBackup(backupId, operationLog);
+        }
+        if (optimizeAPI.isOptimizeExist()) {
+            optimizeAPI.monitorBackup(backupId, operationLog);
+        }
 
         // Stop Zeebe imported
-
+        zeebeAPI.pauseExporting(operationLog);
 
         // backup Zeebe record
+        zeebeAPI.esBackup(backupId, operationLog);
+        zeebeAPI.monitorEsBackup(backupId, operationLog);
+
         // backup Zeebe
+        zeebeAPI.backup(backupId, operationLog);
+        zeebeAPI.monitorBackup(backupId, operationLog);
 
         // Finish? Then stop all restoration pod
+        zeebeAPI.resumeExporting(operationLog);
 
-        // scale up Zeebe
+
 
         operationLog.info("End of backup in " + (System.currentTimeMillis() - beginTime) + " ms");
         jobStatus = JOBSTATUS.COMPLETED;

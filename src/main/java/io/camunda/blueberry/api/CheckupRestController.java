@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class CheckupRestController {
 
+
     @Autowired
     private CheckupManager checkupManager;
 
@@ -27,7 +28,6 @@ public class CheckupRestController {
     @GetMapping(value = "/api/checkup/check", produces = "application/json")
     public Map<String, Object> checkup() {
         return checkupManager.checkup();
-
     }
 
 }

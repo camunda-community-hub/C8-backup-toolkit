@@ -43,7 +43,8 @@ public class BackupRestController {
             backupManager.startBackup(backupId);
         } catch (BackupStartException e) {
             // if a backup is already in progress, will return a status "ALREADYRUNNING"
-            return Map.of("status", "BackupInProgress",
+            return Map.of("status", "BACKUP_CANT_START",
+                    "explanation", e.getExplanation(),
                     "backupId", e.getBackupId());
         } catch (OperationException e) {
             return Map.of("error", e.getExplanation());
@@ -71,27 +72,22 @@ public class BackupRestController {
      */
     @GetMapping(value = "/api/backup/list", produces = "application/json")
     public List<Map<String, Object>> listBackup(@RequestParam(name = "timezoneoffset") Long timezoneOffset) {
-        List<BackupInfo> listBackup = zeebeAPI.getListBackup();
 
-        // For the mockup, just create my own list
-        listBackup = new ArrayList<>();
-        BackupInfo backupInfo = new BackupInfo();
-        // Combine date and time, then set UTC time zone
-        backupInfo.backupTime = LocalDateTime.of(LocalDate.now(ZoneOffset.UTC), LocalTime.of(8, 0));
-        backupInfo.backupId = 1L;
-        backupInfo.backupName = "Green";
-        backupInfo.status = BackupInfo.Status.SUCCESS;
-        listBackup.add(backupInfo);
+        try {
+            List<BackupInfo> listBackup = zeebeAPI.getListBackup();
 
-        return listBackup.stream().map(obj -> {
-                    Map<String, Object> record = new HashMap<>();
-                    record.put("backupId", obj.backupId);
-                    record.put("backupName", obj.backupName);
-                    record.put("backupTime", DateOperation.dateTimeToHumanString(obj.backupTime, timezoneOffset));
-                    record.put("backupStatus", obj.status == null ? "" : obj.status.toString());
+            return listBackup.stream().map(obj -> {
+                        Map<String, Object> record = new HashMap<>();
+                        record.put("backupId", obj.backupId);
+                        record.put("backupName", obj.backupName);
+                        record.put("backupTime", DateOperation.dateTimeToHumanString(obj.backupTime, timezoneOffset));
+                        record.put("backupStatus", obj.status == null ? "" : obj.status.toString());
 
-                    return record;
-                })
-                .collect(Collectors.toList());
+                        return record;
+                    })
+                    .collect(Collectors.toList());
+        } catch (OperationException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

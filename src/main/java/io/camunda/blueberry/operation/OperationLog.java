@@ -1,8 +1,6 @@
 package io.camunda.blueberry.operation;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class OperationLog {
 
@@ -41,6 +39,17 @@ public class OperationLog {
     }
 
     enum Type {INFO, WARNING, ERROR}
+
+    Map<String, List<String>> snapshotPerComponents = new HashMap<>();
+    public void addSnapshotName(String component, String snapshotName) {
+        List<String> listSnapshop = snapshotPerComponents.get(component);
+        if (listSnapshop == null) {
+            listSnapshop = new ArrayList();
+        }
+        listSnapshop.add(snapshotName);
+        snapshotPerComponents.put(component, listSnapshop);
+    }
+
 
     public class Message {
         public Type type;
