@@ -2,7 +2,7 @@ package io.camunda.blueberry.api;
 
 import io.camunda.blueberry.client.BackupInfo;
 import io.camunda.blueberry.client.ZeebeAPI;
-import io.camunda.blueberry.exception.BackupStartException;
+import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.backup.BackupJob;
 import io.camunda.blueberry.operation.backup.BackupManager;
@@ -10,11 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +36,7 @@ public class BackupRestController {
         logger.info("StartBackup [{}]", backupId);
         try {
             backupManager.startBackup(backupId);
-        } catch (BackupStartException e) {
+        } catch (BackupException e) {
             // if a backup is already in progress, will return a status "ALREADYRUNNING"
             return Map.of("status", "BACKUP_CANT_START",
                     "explanation", e.getExplanation(),

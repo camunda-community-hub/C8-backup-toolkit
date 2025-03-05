@@ -1,8 +1,8 @@
 package io.camunda.blueberry.operation.backup;
 
 import io.camunda.blueberry.client.*;
+import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
-import io.camunda.zeebe.client.ZeebeClient;
 
 /**
  * Collect all operation of the backup. This is returned to the monitoring, or at the end of the execution
@@ -41,11 +41,12 @@ public class BackupJob {
     /**
      * Start a backup
      */
-    public void backup(long backupId) {
+    public void backup(long backupId) throws BackupException {
         long beginTime = System.currentTimeMillis();
         operationLog.info("Start Backup");
         jobStatus = JOBSTATUS.INPROGRESS;
         this.backupId = backupId; // calculate a new backup
+
         // backup Operate
         if (operateAPI.isOperateExist()) {
             operateAPI.backup(backupId, operationLog);
@@ -59,13 +60,13 @@ public class BackupJob {
 
         // Wait end of backup Operate, TaskList, Optimize, Zeebe
         if (operateAPI.isOperateExist()) {
-            operateAPI.monitorBackup(backupId, operationLog);
+            operateAPI.waitBackup(backupId, operationLog);
         }
         if (taskListAPI.isTaskListExist()) {
-            taskListAPI.monitorBackup(backupId, operationLog);
+            taskListAPI.waitBackup(backupId, operationLog);
         }
         if (optimizeAPI.isOptimizeExist()) {
-            optimizeAPI.monitorBackup(backupId, operationLog);
+            optimizeAPI.waitBackup(backupId, operationLog);
         }
 
         // Stop Zeebe imported

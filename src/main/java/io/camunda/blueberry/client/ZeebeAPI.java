@@ -1,32 +1,43 @@
 package io.camunda.blueberry.client;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.OperationLog;
 import io.camunda.zeebe.protocol.impl.encoding.BackupListResponse;
 import io.camunda.zeebe.protocol.impl.encoding.BackupStatusResponse;
+import io.camunda.zeebe.protocol.management.BackupStatusCode;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 @Component
 public class ZeebeAPI extends WebActuator{
 
+    private final ObjectMapper objectMapper;
     private BlueberryConfig blueberryConfig;
     private RestTemplate restTemplate;
 
-    public ZeebeAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
+    public ZeebeAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper) {
         super(restTemplate);
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
     }    public void connection() {
 
     }
@@ -145,14 +156,26 @@ public class ZeebeAPI extends WebActuator{
         ResponseEntity<BackupStatusResponse> backupStatusResponse = null;
         try {
             logger.info("Execute [{}]",blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups");
-            ResponseEntity<BackupListResponse> listResponse = restTemplate.getForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups", BackupListResponse.class);
-            List<BackupInfo> listBackupInfo = listResponse.getBody().getBackups().stream()
-                    .map(t->{ BackupInfo info = new BackupInfo();
-                        info.backupId = t.backupId();
-                        info.backupName = "";
-                        info.status = BackupInfo.fromZeebeStatus(t.status());
-                        return info;
-                    }).collect(Collectors.toList());
+            ResponseEntity<JsonNode> listResponse = restTemplate.getForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups", JsonNode.class);
+            JsonNode jsonArray = listResponse.getBody();
+
+            List<BackupInfo> listBackupInfo= StreamSupport.stream(jsonArray.spliterator(), false)
+                            .map(t-> {
+                                BackupInfo backupInfo = new BackupInfo();
+                                backupInfo.backupId = t.get("backupId").asInt();
+                                backupInfo.status = BackupInfo.fromZeebeStatus(BackupStatusCode.valueOf(t.get("state").asText()));
+                                // search the date in the first partition
+                                JsonNode[] details = objectMapper.convertValue(t.get("details"), JsonNode[].class);
+
+                                String timestamp = details[0].get("createdAt").asText();
+                                LocalDateTime localDateTime = Instant.parse(timestamp)
+                                        .atZone(ZoneId.systemDefault()) // Convert to system's time zone
+                                        .toLocalDateTime();
+
+                                backupInfo.backupTime = localDateTime;
+                                return backupInfo;
+                            }).toList();
+            logger.info("Found {} backups", listBackupInfo.size());
 
             return listBackupInfo;
         } catch (Exception e) {

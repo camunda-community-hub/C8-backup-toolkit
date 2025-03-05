@@ -1,15 +1,13 @@
 package io.camunda.blueberry.client;
 
 import io.camunda.blueberry.config.BlueberryConfig;
+import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Component
 /**
@@ -37,14 +35,14 @@ public class OperateAPI extends WebActuator {
     }
 
 
-    public void backup(Long backupId, OperationLog operationLog) {
-        startBackup("operate", backupId, blueberryConfig.getOperateUrl(), operationLog);
+    public void backup(Long backupId, OperationLog operationLog) throws BackupException {
+        startBackup(COMPONENT.OPERATE, backupId, blueberryConfig.getOperateUrl(), operationLog);
     }
 
 
 
-public void monitorBackup(Long backupId, OperationLog operationLog) {
-    checkBackupStatus(COMPONENT.OPERATE, backupId, blueberryConfig.getOperateUrl(), operationLog);
+public void waitBackup(Long backupId, OperationLog operationLog) {
+    waitBackup(COMPONENT.OPERATE, backupId, blueberryConfig.getOperateUrl(), operationLog);
 }
 
 /**

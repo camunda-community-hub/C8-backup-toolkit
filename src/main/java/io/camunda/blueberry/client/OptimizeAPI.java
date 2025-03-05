@@ -1,6 +1,7 @@
 package io.camunda.blueberry.client;
 
 import io.camunda.blueberry.config.BlueberryConfig;
+import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +32,12 @@ public class OptimizeAPI extends WebActuator {
     }
 
 
-    public void backup(Long backupId, OperationLog operationLog) {
-        startBackup("optimize", backupId, blueberryConfig.getOptimizeUrl(), operationLog);
+    public void backup(Long backupId, OperationLog operationLog) throws BackupException {
+        startBackup(COMPONENT.OPTIMIZE, backupId, blueberryConfig.getOptimizeUrl(), operationLog);
     }
 
-    public void monitorBackup(Long backupId, OperationLog operationLog) {
-        checkBackupStatus(COMPONENT.OPTIMIZE, backupId, blueberryConfig.getOptimizeUrl(), operationLog);
+    public void waitBackup(Long backupId, OperationLog operationLog) {
+        waitBackup(COMPONENT.OPTIMIZE, backupId, blueberryConfig.getOptimizeUrl(), operationLog);
     }
 
 }

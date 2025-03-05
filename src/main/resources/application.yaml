@@ -1,6 +1,6 @@
 blueberry:
   optimizeurl:
-  operateurl: http://mocalhost:8081
+  operateurl: http://localhost:8081
   tasklisturl: http://localhost:8082
   zeebeactuatorurl: http://localhost:9600
 
