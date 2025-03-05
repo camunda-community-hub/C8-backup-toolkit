@@ -7,6 +7,13 @@ blueberry:
 server:
   port: 9081
 
+# List of port to access
+# kubectl port-forward svc/camunda-zeebe-gateway 26500:26500 -n camunda
+# kubectl port-forward svc/camunda-zeebe-gateway 9600:9600 -n camunda
+# kubectl port-forward svc/camunda-operate 8081:80 -n camunda
+# kubectl port-forward svc/camunda-tasklist 8082:80 -n camunda
+# kubectl port-forward svc/camunda-elasticsearch 9200:9200 -n camunda
+
 # -------------------- Self Manage
 camunda:
   client:
