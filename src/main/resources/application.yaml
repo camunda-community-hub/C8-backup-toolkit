@@ -1,11 +1,11 @@
 blueberry:
-  optimizeurl:
-  operateurl: http://localhost:8081
-  tasklisturl: http://localhost:8082
-  zeebeactuatorurl: http://localhost:9600
+  optimizeActuatorUrl:
+  operateActuatorUrl: http://localhost:9601
+  tasklistActuatorUrl: http://localhost:9602
+  zeebeActuatorUrl: http://localhost:9600
 
 server:
-  port: 9081
+  port: 9082
 
 # List of port to access
 # kubectl port-forward svc/camunda-zeebe-gateway 26500:26500 -n camunda

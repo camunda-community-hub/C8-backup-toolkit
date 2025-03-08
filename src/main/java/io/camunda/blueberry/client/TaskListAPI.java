@@ -1,5 +1,7 @@
 package io.camunda.blueberry.client;
 
+import io.camunda.blueberry.client.toolbox.KubenetesToolbox;
+import io.camunda.blueberry.client.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
@@ -9,16 +11,18 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class TaskListAPI extends WebActuator {
+public class TaskListAPI implements CamundaApplication {
 
     Logger logger = LoggerFactory.getLogger(TaskListAPI.class);
 
-    private BlueberryConfig blueberryConfig;
-
-    private RestTemplate restTemplate;
+    private final BlueberryConfig blueberryConfig;
+    private final RestTemplate restTemplate;
+    private final WebActuator webActuator;
+    private final KubenetesToolbox kubenetesToolbox;
 
     public TaskListAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
-        super(restTemplate);
+        webActuator = new WebActuator(restTemplate);
+        kubenetesToolbox = new KubenetesToolbox();
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;
     }
@@ -27,16 +31,16 @@ public class TaskListAPI extends WebActuator {
 
     }
 
-    public boolean isTaskListExist() {
-        return false;
+    public boolean exist() {
+        return kubenetesToolbox.isPodExist("tasklist");
     }
 
-    public void backup(Long backupId, OperationLog operationLog) throws BackupException {
-        startBackup(COMPONENT.TASKLIST, backupId, blueberryConfig.getTasklistUrl(), operationLog);
+    public BackupOperation backup(Long backupId, OperationLog operationLog) throws BackupException {
+        return webActuator.startBackup(CamundaApplication.COMPONENT.TASKLIST, backupId, blueberryConfig.getTasklistActuatorUrl(), operationLog);
     }
 
     public void waitBackup(Long backupId, OperationLog operationLog) {
-        waitBackup(COMPONENT.TASKLIST, backupId, blueberryConfig.getTasklistUrl(), operationLog);
+        webActuator.waitBackup(CamundaApplication.COMPONENT.TASKLIST, backupId, blueberryConfig.getTasklistActuatorUrl(), operationLog);
     }
 
 }

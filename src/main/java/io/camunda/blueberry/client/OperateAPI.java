@@ -1,5 +1,7 @@
 package io.camunda.blueberry.client;
 
+import io.camunda.blueberry.client.toolbox.KubenetesToolbox;
+import io.camunda.blueberry.client.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
@@ -13,14 +15,17 @@ import java.util.List;
 /**
  * Manage communication to OperateAPI
  */
-public class OperateAPI extends WebActuator {
+public class OperateAPI implements CamundaApplication {
 
 
-    private BlueberryConfig blueberryConfig;
-    private RestTemplate restTemplate;
+    private final BlueberryConfig blueberryConfig;
+    private final RestTemplate restTemplate;
+    private final WebActuator webActuator;
+    private final KubenetesToolbox kubenetesToolbox;
 
     public OperateAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
-        super(restTemplate);
+        webActuator = new WebActuator(restTemplate);
+        kubenetesToolbox = new KubenetesToolbox();
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;
     }
@@ -30,19 +35,20 @@ public class OperateAPI extends WebActuator {
     }
 
 
-    public boolean isOperateExist() {
-        return true;
+    public boolean exist() {
+        return kubenetesToolbox.isPodExist("operate");
     }
 
 
-    public void backup(Long backupId, OperationLog operationLog) throws BackupException {
-        startBackup(COMPONENT.OPERATE, backupId, blueberryConfig.getOperateUrl(), operationLog);
+    public CamundaApplication.BackupOperation backup(Long backupId, OperationLog operationLog) throws BackupException {
+        return webActuator.startBackup(CamundaApplication.COMPONENT.OPERATE, backupId, blueberryConfig.getOperateActuatorUrl(), operationLog);
+
     }
 
 
 
 public void waitBackup(Long backupId, OperationLog operationLog) {
-    waitBackup(COMPONENT.OPERATE, backupId, blueberryConfig.getOperateUrl(), operationLog);
+    webActuator.waitBackup(CamundaApplication.COMPONENT.OPERATE, backupId, blueberryConfig.getOperateActuatorUrl(), operationLog);
 }
 
 /**

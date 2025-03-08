@@ -9,31 +9,31 @@ import org.springframework.stereotype.Component;
 @Component
 public class BlueberryConfig {
 
-    @Value("${blueberry.optimizeurl:@null}")
-    private String optimizeUrl;
+    @Value("${blueberry.optimizeActuatorUrl:@null}")
+    private String optimizeActuatorUrl;
 
-    @Value("${blueberry.operateurl:@null}")
-    private String operateUrl;
+    @Value("${blueberry.operateActuatorUrl:@null}")
+    private String operateActuatorUrl;
 
-    @Value("${blueberry.tasklisturl:@null}")
-    private String tasklistUrl;
+    @Value("${blueberry.tasklistActuatorUrl:@null}")
+    private String tasklistActuatorUrl;
 
-    @Value("${blueberry.zeebeactuatorurl:http://localhost:9600}")
+    @Value("${blueberry.zeebeActuatorUrl:http://localhost:9600}")
     private String zeebeActuatorUrl;
 
     @Value("${blueberry.elasticsearchurl:http://localhost:9200}")
     private String elasticsearchUrl;
 
-    public String getOptimizeUrl() {
-        return optimizeUrl;
+    public String getOptimizeActuatorUrl() {
+        return optimizeActuatorUrl;
     }
 
-    public String getOperateUrl() {
-        return operateUrl;
+    public String getOperateActuatorUrl() {
+        return operateActuatorUrl;
     }
 
-    public String getTasklistUrl() {
-        return tasklistUrl;
+    public String getTasklistActuatorUrl() {
+        return tasklistActuatorUrl;
     }
 
     public String getZeebeActuatorUrl() {

@@ -33,13 +33,15 @@ public class BackupRestController {
     @PostMapping(value = "/api/backup/start", produces = "application/json")
     public Map<String, Object> startBackup(@RequestParam(required = false, name = "backupId") Long backupId) {
         // Return the backupId if no one was given
-        logger.info("StartBackup [{}]", backupId);
+        logger.info("Rest [/api/backup/start] backupId[{}]", backupId);
         try {
             backupManager.startBackup(backupId);
         } catch (BackupException e) {
             // if a backup is already in progress, will return a status "ALREADYRUNNING"
             return Map.of("status", "BACKUP_CANT_START",
-                    "explanation", e.getExplanation(),
+                    "explanation", e.getInformation() ,
+                    "technicalExplanation", e.getDetailInformation(),
+
                     "backupId", e.getBackupId());
         } catch (OperationException e) {
             return Map.of("error", e.getExplanation());
@@ -69,7 +71,10 @@ public class BackupRestController {
     public List<Map<String, Object>> listBackup(@RequestParam(name = "timezoneoffset") Long timezoneOffset) {
 
         try {
+            logger.debug("Rest [/api/backup/list]");
             List<BackupInfo> listBackup = zeebeAPI.getListBackup();
+
+            logger.info("Rest [/api/backup/list] found {} backups", listBackup.size());
 
             return listBackup.stream().map(obj -> {
                         Map<String, Object> record = new HashMap<>();

@@ -1,5 +1,7 @@
 package io.camunda.blueberry.client;
 
+import io.camunda.blueberry.client.toolbox.KubenetesToolbox;
+import io.camunda.blueberry.client.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
@@ -9,15 +11,19 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class OptimizeAPI extends WebActuator {
+public class OptimizeAPI implements CamundaApplication {
 
     Logger logger = LoggerFactory.getLogger(OptimizeAPI.class.getName());
 
-    BlueberryConfig blueberryConfig;
-    private RestTemplate restTemplate;
+    private final BlueberryConfig blueberryConfig;
+    private final RestTemplate restTemplate;
+    private final WebActuator webActuator;
+    private final KubenetesToolbox kubenetesToolbox;
 
     OptimizeAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
-        super(restTemplate);
+        webActuator = new WebActuator(restTemplate);
+        kubenetesToolbox = new KubenetesToolbox();
+
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;
     }
@@ -26,18 +32,18 @@ public class OptimizeAPI extends WebActuator {
     }
 
 
-    public boolean isOptimizeExist() {
-        String url = blueberryConfig.getOptimizeUrl();
-        return (url != null && url.isEmpty());
+    public boolean exist() {
+        String url = blueberryConfig.getOptimizeActuatorUrl();
+        return kubenetesToolbox.isPodExist("tasklist");
     }
 
 
-    public void backup(Long backupId, OperationLog operationLog) throws BackupException {
-        startBackup(COMPONENT.OPTIMIZE, backupId, blueberryConfig.getOptimizeUrl(), operationLog);
+    public BackupOperation backup(Long backupId, OperationLog operationLog) throws BackupException {
+        return webActuator.startBackup(CamundaApplication.COMPONENT.OPTIMIZE, backupId, blueberryConfig.getOptimizeActuatorUrl(), operationLog);
     }
 
     public void waitBackup(Long backupId, OperationLog operationLog) {
-        waitBackup(COMPONENT.OPTIMIZE, backupId, blueberryConfig.getOptimizeUrl(), operationLog);
+        webActuator.waitBackup(CamundaApplication.COMPONENT.OPTIMIZE, backupId, blueberryConfig.getOptimizeActuatorUrl(), operationLog);
     }
 
 }

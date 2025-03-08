@@ -1,8 +1,12 @@
 package io.camunda.blueberry.operation.backup;
 
 import io.camunda.blueberry.client.*;
+import io.camunda.blueberry.client.toolbox.WebActuator;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Collect all operation of the backup. This is returned to the monitoring, or at the end of the execution
@@ -43,49 +47,53 @@ public class BackupJob {
      */
     public void backup(long backupId) throws BackupException {
         long beginTime = System.currentTimeMillis();
-        operationLog.info("Start Backup");
-        jobStatus = JOBSTATUS.INPROGRESS;
+        operationLog.startOperation("Backup", 7);
+
+        this.jobStatus = JOBSTATUS.INPROGRESS;
         this.backupId = backupId; // calculate a new backup
 
-        // backup Operate
-        if (operateAPI.isOperateExist()) {
-            operateAPI.backup(backupId, operationLog);
+
+        // Keep only applications existing in the cluster
+        List<CamundaApplication> listApplications = List.of(operateAPI, taskListAPI, optimizeAPI)
+                .stream()
+                .filter(CamundaApplication::exist)
+                .toList();
+
+        // For each application, start the backup
+        for (CamundaApplication application : listApplications) {
+                CamundaApplication.BackupOperation backupOperation = application.backup(backupId, operationLog);
+                if (!backupOperation.isOk()) {
+                    this.jobStatus = JOBSTATUS.FAILED;
+                    throw new BackupException(CamundaApplication.COMPONENT.OPERATE, backupOperation.information, backupOperation.detailInformation, backupId);
+
+            }
         }
-        // backup TaskList
-        if (taskListAPI.isTaskListExist()) {
-            taskListAPI.backup(backupId, operationLog);
-        }
-        // backup Optimize
-        if (optimizeAPI.isOptimizeExist()) optimizeAPI.backup(backupId, operationLog);
 
         // Wait end of backup Operate, TaskList, Optimize, Zeebe
-        if (operateAPI.isOperateExist()) {
-            operateAPI.waitBackup(backupId, operationLog);
-        }
-        if (taskListAPI.isTaskListExist()) {
-            taskListAPI.waitBackup(backupId, operationLog);
-        }
-        if (optimizeAPI.isOptimizeExist()) {
-            optimizeAPI.waitBackup(backupId, operationLog);
+        for (CamundaApplication application : listApplications) {
+                application.waitBackup(backupId, operationLog);
         }
 
         // Stop Zeebe imported
+        operationLog.operationStep("Pause Zeebe");
         zeebeAPI.pauseExporting(operationLog);
 
         // backup Zeebe record
+        operationLog.operationStep("Backup Zeebe Elasticsearch");
         zeebeAPI.esBackup(backupId, operationLog);
         zeebeAPI.monitorEsBackup(backupId, operationLog);
 
         // backup Zeebe
+        operationLog.operationStep("Backup Zeebe");
         zeebeAPI.backup(backupId, operationLog);
         zeebeAPI.monitorBackup(backupId, operationLog);
 
         // Finish? Then stop all restoration pod
+        operationLog.operationStep("Resume Zeebe");
         zeebeAPI.resumeExporting(operationLog);
 
+        operationLog.endOperation();
 
-
-        operationLog.info("End of backup in " + (System.currentTimeMillis() - beginTime) + " ms");
         jobStatus = JOBSTATUS.COMPLETED;
     }
 
