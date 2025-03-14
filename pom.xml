@@ -115,6 +115,20 @@
 
         <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
 
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-client</artifactId>
+            <version>7.1.0</version>  <!-- Use the latest version -->
+        </dependency>
+
+
+
+        <!-- Docker -->
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java</artifactId>
+            <version>3.3.4</version>
+        </dependency>
 
 
         <!-- tests -->
@@ -263,7 +277,10 @@
 
 
     <repositories>
-
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
         <repository>
             <releases>
                 <enabled>true</enabled>
@@ -311,5 +328,7 @@
             <name>Camunda Community</name>
             <url>https://artifacts.camunda.com/artifactory/camunda-bpm-community-extensions/</url>
         </repository>
+
+
     </repositories>
 </project>

@@ -50,7 +50,7 @@ class BlueberryApp extends React.Component {
             <Nav className="mr-auto">
               <Navbar.Brand href="#home">
                 <img src="/img/blueberry.png" width="28" height="28" alt="Blueberry"/>
-                Blueberry Runtime
+                Blueberry Backup
               </Navbar.Brand>
 
               <Nav.Link onClick={() => {

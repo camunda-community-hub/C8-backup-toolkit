@@ -60,10 +60,10 @@ class Scheduler extends React.Component {
 
 
   refreshList() {
-    console.log("Definition.refreshList http[cherry/api/runner/list]");
+    console.log("Definition.refreshList http[blueberry/api/runner/list]");
     this.setState({runners: [], status: ""});
     var restCallService = RestCallService.getInstance();
-    restCallService.getJson('cherry/api/runner/list?', this, this.refreshListCallback);
+    restCallService.getJson('blueberry/api/runner/list?', this, this.refreshListCallback);
   }
 
   refreshListCallback(httpPayload) {

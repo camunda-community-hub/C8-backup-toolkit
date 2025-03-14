@@ -155,7 +155,6 @@ class Backup extends React.Component {
     }
 
     startBackupCallback(httpPayload) {
-        debugger;
         this.setDisplayProperty("loading", false);
         if (httpPayload.isError()) {
             console.log("Backup.startBackupCallback: error " + httpPayload.getError());

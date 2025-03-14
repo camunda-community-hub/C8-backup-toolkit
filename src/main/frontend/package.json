@@ -35,7 +35,7 @@
     ]
   },
   "proxyComment": "Put the same value in RestCallService.jsx",
-  "proxy": "http://127.0.0.1:9081",
+  "proxy": "http://127.0.0.1:9082",
   "browserslist": {
     "production": [
       ">0.2%",
