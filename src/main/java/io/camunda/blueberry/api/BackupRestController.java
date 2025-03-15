@@ -41,7 +41,6 @@ public class BackupRestController {
             return Map.of("status", "BACKUP_CANT_START",
                     "explanation", e.getInformation() ,
                     "technicalExplanation", e.getDetailInformation(),
-
                     "backupId", e.getBackupId());
         } catch (OperationException e) {
             return Map.of("error", e.getExplanation());

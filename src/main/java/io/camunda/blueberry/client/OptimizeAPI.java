@@ -34,7 +34,7 @@ public class OptimizeAPI implements CamundaApplication {
 
     public boolean exist() {
         String url = blueberryConfig.getOptimizeActuatorUrl();
-        return kubenetesToolbox.isPodExist("tasklist");
+        return kubenetesToolbox.isPodExist("optimize");
     }
 
 

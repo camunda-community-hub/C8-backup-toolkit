@@ -1,6 +1,5 @@
 package io.camunda.blueberry.client;
 
-import io.camunda.blueberry.client.toolbox.WebActuator;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
 
@@ -26,7 +25,7 @@ public interface CamundaApplication {
         public String detailInformation;
 
         public boolean isOk() {
-            return status==200;
+            return status == 200 || status == 202; // Accept both 200 (Operate, Tasklist) and 202 (Optimize)
         }
     }
 }

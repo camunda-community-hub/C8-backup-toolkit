@@ -1,5 +1,5 @@
 blueberry:
-  optimizeActuatorUrl:
+  optimizeActuatorUrl: http://localhost:9603
   operateActuatorUrl: http://localhost:9601
   tasklistActuatorUrl: http://localhost:9602
   zeebeActuatorUrl: http://localhost:9600
@@ -13,7 +13,10 @@ server:
 # kubectl port-forward svc/camunda-operate 8081:80 -n camunda
 # kubectl port-forward svc/camunda-tasklist 8082:80 -n camunda
 # kubectl port-forward svc/camunda-elasticsearch 9200:9200 -n camunda
-
+# port forward component acuator
+# kubectl port-forward svc/camunda-operate 9601:9600 -n camunda
+# kubectl port-forward svc/camunda-tasklist 9602:9600 -n camunda
+# kubectl port-forward svc/camunda-optimize 9603:8092 -n camunda
 # -------------------- Self Manage
 camunda:
   client:

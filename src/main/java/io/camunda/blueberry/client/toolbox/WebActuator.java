@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class WebActuator {
@@ -51,15 +49,21 @@ public class WebActuator {
             }
             // Extract the list of Snapshoot
             JsonNode bodyJson = backupResponse.getBody();
-            JsonNode snapshotsNode = bodyJson.get("scheduledSnapshots");
+            if (bodyJson.has("scheduledSnapshots")) { // Check if scheduledSnapshots exists
+                JsonNode snapshotsNode = bodyJson.get("scheduledSnapshots");
 
-            if (snapshotsNode != null && snapshotsNode.isArray()) {
-                for (JsonNode node : snapshotsNode) {
-                    backupOperation.listSnapshots.add(node.asText());
+                if (snapshotsNode != null && snapshotsNode.isArray()) {
+                    for (JsonNode node : snapshotsNode) {
+                        backupOperation.listSnapshots.add(node.asText());
+                    }
                 }
+                operationLog.info("backup [" + backupId + "] url[" + url + "] ListBackup[" + backupOperation.listSnapshots + "]");
+            } else if (bodyJson.has("message")) { // Handle Optimize case where "message" exists
+                backupOperation.information = bodyJson.get("message").asText();
+                operationLog.info(String.format("backup [%d] url[%s] Message[%s]", backupId, url, backupOperation.information));
+            } else {
+                operationLog.warning(String.format("backup [%d] url[%s] Unexpected response: %s", backupId, url, bodyJson.toString()));
             }
-            operationLog.info("backup [" + backupId + "] url[" + url + "] ListBackup[" + backupOperation.listSnapshots + "]");
-
         } catch(Exception e) {
             String messageSimplified = decodeMessage(e.getMessage());
             backupOperation.information = messageSimplified;
