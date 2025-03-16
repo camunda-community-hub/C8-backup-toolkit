@@ -13,22 +13,23 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class TaskListAPI implements CamundaApplication {
 
-    Logger logger = LoggerFactory.getLogger(TaskListAPI.class);
-
     private final BlueberryConfig blueberryConfig;
-    private final RestTemplate restTemplate;
     private final WebActuator webActuator;
     private final KubenetesToolbox kubenetesToolbox;
+    Logger logger = LoggerFactory.getLogger(TaskListAPI.class);
 
     public TaskListAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
         webActuator = new WebActuator(restTemplate);
         kubenetesToolbox = new KubenetesToolbox();
         this.blueberryConfig = blueberryConfig;
-        this.restTemplate = restTemplate;
     }
 
     public void connection() {
 
+    }
+
+    public COMPONENT getComponent() {
+        return COMPONENT.TASKLIST;
     }
 
     public boolean exist() {

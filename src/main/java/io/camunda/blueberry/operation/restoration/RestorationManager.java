@@ -11,9 +11,9 @@ import org.springframework.stereotype.Component;
 public class RestorationManager {
 
 
+    public RestorationJob currentRestorationJob;
     @Autowired
     ZeebeAPI zeebeAccess;
-    public RestorationJob currentRestorationJob;
 
     public void startRestoration(Long backupId) {
         // Collect the parameters : number of cluster, partitions, replica factor

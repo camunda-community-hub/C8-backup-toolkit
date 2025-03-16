@@ -1,36 +1,42 @@
 package io.camunda.blueberry.exception;
 
 import io.camunda.blueberry.client.CamundaApplication;
-import io.camunda.blueberry.client.toolbox.WebActuator;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class BackupException extends OperationException {
 
     private final long backupId;
-    private final String information;
-    private final String detailInformation;
     private final CamundaApplication.COMPONENT component;
 
-    public BackupException(CamundaApplication.COMPONENT component, String information, String detailInformation, Long backupId) {
-        super("BackupException", "Start error " + information);
+    public BackupException(CamundaApplication.COMPONENT component, int status, String error, String message, Long backupId) {
+        super(BLUEBERRYERRORCODE.BACKUP, status, error, message);
         this.component = component;
-        this.information=information;
-        this.detailInformation=detailInformation;
         this.backupId = backupId;
+    }
+
+    public static BackupException getInstanceFromException(CamundaApplication.COMPONENT component, Long backupId, Exception e) {
+        OperationException operationException = getInstanceFromException(BLUEBERRYERRORCODE.BACKUP, e);
+        return new BackupException(component, operationException.getStatus(), operationException.getError(), operationException.getMessage(), backupId);
     }
 
     public long getBackupId() {
         return backupId;
     }
 
-    public String getInformation() {
-        return information;
-    }
-
-    public String getDetailInformation() {
-        return detailInformation;
-    }
-
     public CamundaApplication.COMPONENT getComponent() {
         return component;
     }
+
+    @Override
+    public Map<String, Object> getRecord() {
+        Map mapRecord = new HashMap<String, Object>();
+        mapRecord.putAll(super.getRecord());
+        mapRecord.put("backupId", backupId);
+        mapRecord.put("component", component);
+        return mapRecord;
+    }
+
+
 }

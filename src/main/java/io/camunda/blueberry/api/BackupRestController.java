@@ -30,25 +30,23 @@ public class BackupRestController {
         this.backupManager = backupManager;
     }
 
+
     @PostMapping(value = "/api/backup/start", produces = "application/json")
-    public Map<String, Object> startBackup(@RequestParam(required = false, name = "backupId") Long backupId) {
+    public Map<String, Object> startBackup(@RequestBody BackupManager.BackupParameter backupParameter) {
         // Return the backupId if no one was given
-        logger.info("Rest [/api/backup/start] backupId[{}]", backupId);
+
+        logger.info("Rest [/api/backup/start] nextId[{}] backupId[{}]", backupParameter.nextId, backupParameter.backupId);
         try {
-            backupManager.startBackup(backupId);
-        } catch (BackupException e) {
-            // if a backup is already in progress, will return a status "ALREADYRUNNING"
-            return Map.of("status", "BACKUP_CANT_START",
-                    "explanation", e.getInformation() ,
-                    "technicalExplanation", e.getDetailInformation(),
-                    "backupId", e.getBackupId());
+            backupManager.startBackup(backupParameter);
         } catch (OperationException e) {
-            return Map.of("error", e.getExplanation());
+            return e.getRecord();
         }
         // The backup is started asynchronously
         BackupJob backupJob = backupManager.getBackupJob();
         Map<String, Object> status = new HashMap<>();
-        status.put("status", backupJob == null ? "STARTED" : backupJob.getJobStatus().toString());
+        status.put("statusOperation", backupJob == null ? "STARTED" : backupJob.getJobStatus().toString());
+        status.put("backupId", backupJob == null ? -1 : backupJob.getBackupId());
+
         return status;
     }
 
@@ -56,7 +54,7 @@ public class BackupRestController {
     public Map<String, Object> monitorBackup() {
         BackupJob backupJob = backupManager.getBackupJob();
         Map<String, Object> status = new HashMap<>();
-        status.put("status", backupJob == null ? "" : backupJob.getJobStatus().toString());
+        status.put("statusOperation", backupJob == null ? "" : backupJob.getJobStatus().toString());
         return status;
     }
 
@@ -67,25 +65,31 @@ public class BackupRestController {
      * @return
      */
     @GetMapping(value = "/api/backup/list", produces = "application/json")
-    public List<Map<String, Object>> listBackup(@RequestParam(name = "timezoneoffset") Long timezoneOffset) {
+    public Map<String, Object> listBackup(@RequestParam(name = "timezoneoffset") Long timezoneOffset) {
 
+        Map<String, Object> result = new HashMap<>();
         try {
             logger.debug("Rest [/api/backup/list]");
             List<BackupInfo> listBackup = zeebeAPI.getListBackup();
 
             logger.info("Rest [/api/backup/list] found {} backups", listBackup.size());
 
-            return listBackup.stream().map(obj -> {
-                        Map<String, Object> record = new HashMap<>();
-                        record.put("backupId", obj.backupId);
-                        record.put("backupName", obj.backupName);
-                        record.put("backupTime", DateOperation.dateTimeToHumanString(obj.backupTime, timezoneOffset));
-                        record.put("backupStatus", obj.status == null ? "" : obj.status.toString());
+            result.put("listBackup", listBackup.stream().map(obj -> {
+                        Map<String, Object> mapRecord = new HashMap<>();
+                        mapRecord.put("backupId", obj.backupId);
+                        mapRecord.put("backupName", obj.backupName);
+                        mapRecord.put("backupTime", DateOperation.dateTimeToHumanString(obj.backupTime, timezoneOffset));
+                        mapRecord.put("backupStatus", obj.status == null ? "" : obj.status.toString());
 
-                        return record;
+                        return mapRecord;
                     })
-                    .collect(Collectors.toList());
+                    .toList());
+            return result;
         } catch (OperationException e) {
+            result.putAll(e.getRecord());
+            return result;
+
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

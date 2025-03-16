@@ -19,7 +19,6 @@ public class OperateAPI implements CamundaApplication {
 
 
     private final BlueberryConfig blueberryConfig;
-    private final RestTemplate restTemplate;
     private final WebActuator webActuator;
     private final KubenetesToolbox kubenetesToolbox;
 
@@ -27,13 +26,15 @@ public class OperateAPI implements CamundaApplication {
         webActuator = new WebActuator(restTemplate);
         kubenetesToolbox = new KubenetesToolbox();
         this.blueberryConfig = blueberryConfig;
-        this.restTemplate = restTemplate;
     }
 
     public void connection() {
 
     }
 
+    public COMPONENT getComponent() {
+        return COMPONENT.OPERATE;
+    }
 
     public boolean exist() {
         return kubenetesToolbox.isPodExist("operate");
@@ -46,18 +47,17 @@ public class OperateAPI implements CamundaApplication {
     }
 
 
+    public void waitBackup(Long backupId, OperationLog operationLog) {
+        webActuator.waitBackup(CamundaApplication.COMPONENT.OPERATE, backupId, blueberryConfig.getOperateActuatorUrl(), operationLog);
+    }
 
-public void waitBackup(Long backupId, OperationLog operationLog) {
-    webActuator.waitBackup(CamundaApplication.COMPONENT.OPERATE, backupId, blueberryConfig.getOperateActuatorUrl(), operationLog);
-}
-
-/**
- * According to the documentation, Operate has a API to get all backup
- * https://docs.camunda.io/docs/8.7/self-managed/operational-guides/backup-restore/operate-tasklist-backup/#get-backups-list-api
- */
-public List<BackupInfo> getListBackup() {
-    return Collections.emptyList();
-}
+    /**
+     * According to the documentation, Operate has a API to get all backup
+     * https://docs.camunda.io/docs/8.7/self-managed/operational-guides/backup-restore/operate-tasklist-backup/#get-backups-list-api
+     */
+    public List<BackupInfo> getListBackup() {
+        return Collections.emptyList();
+    }
 
 
 }

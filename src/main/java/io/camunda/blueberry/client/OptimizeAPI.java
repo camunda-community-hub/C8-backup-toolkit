@@ -13,12 +13,11 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class OptimizeAPI implements CamundaApplication {
 
-    Logger logger = LoggerFactory.getLogger(OptimizeAPI.class.getName());
-
     private final BlueberryConfig blueberryConfig;
     private final RestTemplate restTemplate;
     private final WebActuator webActuator;
     private final KubenetesToolbox kubenetesToolbox;
+    Logger logger = LoggerFactory.getLogger(OptimizeAPI.class.getName());
 
     OptimizeAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
         webActuator = new WebActuator(restTemplate);
@@ -31,6 +30,9 @@ public class OptimizeAPI implements CamundaApplication {
     public void connection() {
     }
 
+    public COMPONENT getComponent() {
+        return COMPONENT.OPTIMIZE;
+    }
 
     public boolean exist() {
         String url = blueberryConfig.getOptimizeActuatorUrl();

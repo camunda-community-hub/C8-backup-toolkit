@@ -1,11 +1,9 @@
 package io.camunda.blueberry.operation.backup;
 
 import io.camunda.blueberry.client.*;
-import io.camunda.blueberry.client.toolbox.WebActuator;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -13,16 +11,16 @@ import java.util.List;
  */
 public class BackupJob {
 
-    OperationLog operationLog;
     private final OperateAPI operateAPI;
     private final TaskListAPI taskListAPI;
     private final OptimizeAPI optimizeAPI;
     private final ZeebeAPI zeebeAPI;
+    OperationLog operationLog;
     private JOBSTATUS jobStatus = JOBSTATUS.PLANNED;
     private long backupId;
 
     protected BackupJob(OperateAPI operateAPI, TaskListAPI taskListAPI, OptimizeAPI optimizeAPI,
-                         ZeebeAPI zeebeAPI, OperationLog operationLog) {
+                        ZeebeAPI zeebeAPI, OperationLog operationLog) {
         this.operateAPI = operateAPI;
         this.taskListAPI = taskListAPI;
         this.optimizeAPI = optimizeAPI;
@@ -46,7 +44,6 @@ public class BackupJob {
      * Start a backup
      */
     public void backup(long backupId) throws BackupException {
-        long beginTime = System.currentTimeMillis();
         operationLog.startOperation("Backup", 7);
 
         this.jobStatus = JOBSTATUS.INPROGRESS;
@@ -61,17 +58,20 @@ public class BackupJob {
 
         // For each application, start the backup
         for (CamundaApplication application : listApplications) {
-                CamundaApplication.BackupOperation backupOperation = application.backup(backupId, operationLog);
-                if (!backupOperation.isOk()) {
-                    this.jobStatus = JOBSTATUS.FAILED;
-                    throw new BackupException(CamundaApplication.COMPONENT.OPERATE, backupOperation.information, backupOperation.detailInformation, backupId);
+            CamundaApplication.BackupOperation backupOperation = application.backup(backupId, operationLog);
+            if (!backupOperation.isOk()) {
+                this.jobStatus = JOBSTATUS.FAILED;
+                throw new BackupException(application.getComponent(),
+                        400,
+                        backupOperation.title,
+                        backupOperation.message, backupId);
 
             }
         }
 
         // Wait end of backup Operate, TaskList, Optimize, Zeebe
         for (CamundaApplication application : listApplications) {
-                application.waitBackup(backupId, operationLog);
+            application.waitBackup(backupId, operationLog);
         }
 
         // Stop Zeebe imported

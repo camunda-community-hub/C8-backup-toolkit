@@ -1,7 +1,6 @@
 package io.camunda.blueberry.client;
 
 
-
 import java.util.List;
 
 

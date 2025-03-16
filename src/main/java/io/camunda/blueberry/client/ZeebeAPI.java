@@ -19,23 +19,26 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 @Component
 public class ZeebeAPI extends WebActuator {
-    Logger logger = LoggerFactory.getLogger(ZeebeAPI.class);
-
     private final ObjectMapper objectMapper;
-    private BlueberryConfig blueberryConfig;
-    private RestTemplate restTemplate;
+    Logger logger = LoggerFactory.getLogger(ZeebeAPI.class);
+    private final BlueberryConfig blueberryConfig;
+    private final RestTemplate restTemplate;
 
     public ZeebeAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper) {
         super(restTemplate);
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
-    }    public void connection() {
+    }
+
+    public void connection() {
 
     }
 
@@ -46,8 +49,7 @@ public class ZeebeAPI extends WebActuator {
     /*                                                                      */
     /* ******************************************************************** */
 
-    public void pauseExporting(OperationLog operationLog)
-    {
+    public void pauseExporting(OperationLog operationLog) {
         ResponseEntity<String> pauseZeebeExporting = restTemplate.postForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/exporting/pause", new HashMap<>(), String.class);
         operationLog.info("Pause Zeebe exporting");
     }
@@ -65,22 +67,23 @@ public class ZeebeAPI extends WebActuator {
 
     /**
      * curl -X PUT http://localhost:9200/_snapshot/zeeberecordrepository/12 -H 'Content-Type: application/json'   \
-     *         -d '{ "indices": "zeebe-record*", "feature_states": ["none"]}'
+     * -d '{ "indices": "zeebe-record*", "feature_states": ["none"]}'
+     *
      * @param backupId
      * @param operationLog
      */
-    public void esBackup(Long backupId, OperationLog operationLog){
+    public void esBackup(Long backupId, OperationLog operationLog) {
         ZeebeInformation zeebeInformation = getInformation();
-        String zeebeEsRepository= zeebeInformation.esRepository;
+        String zeebeEsRepository = zeebeInformation.esRepository;
 
         HttpEntity<?> zeebeEsBackupRequest = new HttpEntity<>(Map.of("indices", "zeebe-record*", "feature_states", List.of("none")));
         ResponseEntity<String> zeebeEsBackupResponse = restTemplate.exchange(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + zeebeEsRepository + "/" + backupId, HttpMethod.PUT, zeebeEsBackupRequest, String.class);
-        operationLog.info("Start Zeebe ES Backup on ["+zeebeEsRepository+"] response: "+zeebeEsBackupResponse.getStatusCode().value()+" ["+ zeebeEsBackupResponse.getBody()+"]");
+        operationLog.info("Start Zeebe ES Backup on [" + zeebeEsRepository + "] response: " + zeebeEsBackupResponse.getStatusCode().value() + " [" + zeebeEsBackupResponse.getBody() + "]");
     }
 
     public void monitorEsBackup(Long backupId, OperationLog operationLog) {
         ZeebeInformation zeebeInformation = getInformation();
-        String zeebeEsRepository= zeebeInformation.esRepository;
+        String zeebeEsRepository = zeebeInformation.esRepository;
 
         ResponseEntity<ZeebeBackupStatusResponse> backupStatusResponse = null;
         do {
@@ -126,8 +129,8 @@ public class ZeebeAPI extends WebActuator {
             backupStatusResponse = restTemplate.getForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups/" + backupId, BackupStatusResponse.class);
             logger.info("backup status response for url {}: {}, {}", blueberryConfig.getZeebeActuatorUrl(), backupStatusResponse.getStatusCodeValue(), backupStatusResponse.getBody());
 
-            if(!written) {
-                    // operationLog.addSnapshotName("zeebe",backupStatusResponse.getBody());
+            if (!written) {
+                // operationLog.addSnapshotName("zeebe",backupStatusResponse.getBody());
                 written = true; //only write once (this can surely be done better :-))
             }
 
@@ -152,31 +155,31 @@ public class ZeebeAPI extends WebActuator {
     public List<BackupInfo> getListBackup() throws OperationException {
         ResponseEntity<BackupStatusResponse> backupStatusResponse = null;
         try {
-            logger.info("Execute [{}]",blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups");
+            logger.info("Execute [{}]", blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups");
             ResponseEntity<JsonNode> listResponse = restTemplate.getForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups", JsonNode.class);
             JsonNode jsonArray = listResponse.getBody();
 
-            List<BackupInfo> listBackupInfo= StreamSupport.stream(jsonArray.spliterator(), false)
-                            .map(t-> {
-                                BackupInfo backupInfo = new BackupInfo();
-                                backupInfo.backupId = t.get("backupId").asInt();
-                                backupInfo.status = BackupInfo.fromZeebeStatus(BackupStatusCode.valueOf(t.get("state").asText()));
-                                // search the date in the first partition
-                                JsonNode[] details = objectMapper.convertValue(t.get("details"), JsonNode[].class);
+            List<BackupInfo> listBackupInfo = StreamSupport.stream(jsonArray.spliterator(), false)
+                    .map(t -> {
+                        BackupInfo backupInfo = new BackupInfo();
+                        backupInfo.backupId = t.get("backupId").asInt();
+                        backupInfo.status = BackupInfo.fromZeebeStatus(BackupStatusCode.valueOf(t.get("state").asText()));
+                        // search the date in the first partition
+                        JsonNode[] details = objectMapper.convertValue(t.get("details"), JsonNode[].class);
 
-                                String timestamp = details[0].get("createdAt").asText();
-                                LocalDateTime localDateTime = Instant.parse(timestamp)
-                                        .atZone(ZoneId.systemDefault()) // Convert to system's time zone
-                                        .toLocalDateTime();
+                        String timestamp = details[0].get("createdAt").asText();
+                        LocalDateTime localDateTime = Instant.parse(timestamp)
+                                .atZone(ZoneId.systemDefault()) // Convert to system's time zone
+                                .toLocalDateTime();
 
-                                backupInfo.backupTime = localDateTime;
-                                return backupInfo;
-                            }).toList();
+                        backupInfo.backupTime = localDateTime;
+                        return backupInfo;
+                    }).toList();
             logger.info("Found {} backups", listBackupInfo.size());
 
             return listBackupInfo;
         } catch (Exception e) {
-            throw new OperationException("BACKUP_LIST", e.getMessage());
+            throw OperationException.getInstanceFromException(OperationException.BLUEBERRYERRORCODE.BACKUP_LIST, e);
         }
     }
 
@@ -186,5 +189,6 @@ public class ZeebeAPI extends WebActuator {
         public int replicaFactor;
         public String esRepository;
     }
+
 
 }

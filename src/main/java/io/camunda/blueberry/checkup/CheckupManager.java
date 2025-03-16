@@ -4,9 +4,7 @@ import io.camunda.blueberry.checkup.rule.Rule;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Component
 public class CheckupManager {
@@ -30,7 +28,7 @@ public class CheckupManager {
      */
     public List<Rule.RuleInfo> checkAllRules() {
         return listRules.stream()
-                .map(t->t.check())
+                .map(t -> t.check())
                 .toList();
     }
 

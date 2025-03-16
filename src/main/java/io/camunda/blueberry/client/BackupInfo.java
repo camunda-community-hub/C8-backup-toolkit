@@ -14,8 +14,6 @@ public class BackupInfo {
     public LocalDateTime backupTime;
     public Status status;
 
-    public enum Status {COMPLETED, FAILED, INPROGRESS, UNKNOWN}
-
     public static Status fromZeebeStatus(BackupStatusCode status) {
         switch (status) {
             case FAILED -> {
@@ -41,4 +39,6 @@ public class BackupInfo {
             }
         }
     }
+
+    public enum Status {COMPLETED, FAILED, INPROGRESS, UNKNOWN}
 }

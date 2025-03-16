@@ -10,19 +10,26 @@ import java.util.List;
  * Multiples component (Operate, TaskList, Optimize) react as the same way. To Simplify the management, they are mark as a "component"
  */
 public interface CamundaApplication {
-    enum COMPONENT { TASKLIST, OPERATE, OPTIMIZE, ZEEBERECORD}
-
     boolean exist();
 
     BackupOperation backup(Long backupId, OperationLog operationLog) throws BackupException;
 
     void waitBackup(Long backupId, OperationLog operationLog) throws BackupException;
 
-    public class BackupOperation {
+    /**
+     * Return the component behind this application
+     *
+     * @return
+     */
+    COMPONENT getComponent();
+
+    enum COMPONENT {TASKLIST, OPERATE, OPTIMIZE, ZEEBERECORD}
+
+    class BackupOperation {
         public List<String> listSnapshots = new ArrayList<>();
         public int status;
-        public String information;
-        public String detailInformation;
+        public String title;
+        public String message;
 
         public boolean isOk() {
             return status == 200 || status == 202; // Accept both 200 (Operate, Tasklist) and 202 (Optimize)

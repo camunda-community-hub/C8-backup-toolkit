@@ -11,12 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-
-import static java.awt.SystemColor.info;
 
 @RestController
 @RequestMapping("blueberry")
@@ -41,9 +38,9 @@ public class CheckupRestController {
 
             logger.debug("Rest [/api/checkup/check]");
 
-            List<Rule.RuleInfo> listRules= checkupManager.checkAllRules();
+            List<Rule.RuleInfo> listRules = checkupManager.checkAllRules();
             logger.info("End Rest [/api/checkup/check] {} rules", listRules.size());
-return listRules.stream()
+            return listRules.stream()
                     .sorted(Comparator.comparing(Rule.RuleInfo::getName)) // Sort by name
                     .map(ruleInfo -> {
                         Map<String, Object> info = Map.of("name", ruleInfo.getName(),

@@ -10,7 +10,7 @@ import React from 'react';
 import RestCallService from "../services/RestCallService";
 import ControllerPage from "../component/ControllerPage";
 
-import {Button, InlineNotification} from "carbon-components-react";
+import {Button, Checkbox, InlineNotification, TextInput} from "carbon-components-react";
 import {ArrowRepeat} from "react-bootstrap-icons";
 
 
@@ -22,8 +22,10 @@ class Backup extends React.Component {
 
         this.state = {
             display: {loading: false},
-            backup: {status: ""},
-            error: null
+            parameter: {explicit: false, backupId: ''},
+            resultCall:{ status:200, error:"", message:"", component:""},
+            listBackup: []
+
         };
     }
 
@@ -47,29 +49,54 @@ class Backup extends React.Component {
 
                 <div className="row" style={{width: "100%"}}>
                     <div className="col-md-12">
-                        <ControllerPage errorMessage={this.state.status} loading={this.state.display.loading}/>
+                        <ControllerPage
+                            error={`${this.state.resultCall.component} - ${this.state.resultCall.error}`}
+                            errorMessage={this.state.resultCall.message}
+                            loading={this.state.display.loading}/>
                     </div>
                 </div>
 
-                {this.state.backup.status !== '' ? (
-                    <div className="alert alert-info" style={{margin: "10px 10px 10px 10px"}}>
-                        {this.state.backup.status} {this.state.backup.backupId}
-                    </div>
-                ) : <div/>
-                }
 
 
                 <div className="row" style={{marginTop: "10px"}}>
-                    <div className="col-md-2">
-                        <Button className="btn btn-warning btn-sm"
-                                onClick={() => {
-                                    this.startBackup()
+                    <div className="col-md-2  d-flex align-items-end">
+                        <div>
+                            <Checkbox
+                                id="chooseBackup"
+                                labelText="Give explicit backupId"
+                                checked={this.state.parameter.explicit}
+                                onChange={(event) => {
+                                    var parameter = this.state.parameter;
+                                    console.log("Parameters=[" + parameter + "] checked=" + event.target.checked);
+                                    parameter.explicit = event.target.checked;
+                                    this.setState({"parameter": parameter})
                                 }}
-                                disabled={this.state.display.loading}>
-                            Start a backup
-                        </Button>
+                            />
+
+                            <TextInput
+                                className="m-3"
+                                labelText="Explicit ID (number only)"
+                                disabled={!this.state.parameter.explicit}
+                                value={this.state.parameter.backupId}
+                                type="number"
+                                onChange={(event) => {
+                                    var parameter = this.state.parameter;
+                                    parameter.backupId = event.target.value;
+                                    this.setState({"parameter": parameter})
+                                }}
+                                placeholder="Enter some text"
+                            />
+
+                            <Button className="btn btn-warning btn-sm"
+                                    onClick={() => {
+                                        this.startBackup()
+                                    }}
+                                    disabled={this.state.display.loading}>
+                                Start a backup
+                            </Button>
+                        </div>
                     </div>
-                    <div className="col-md-2">
+                    <div className="col-md-2  d-flex align-items-end">
                         <Button className="btn btn-success btn-sm"
                                 onClick={() => {
                                     this.refreshListBackup()
@@ -101,8 +128,20 @@ class Backup extends React.Component {
                     }
                     </tbody>
                 </table>
+
             </div>
         )
+    }
+
+
+    /* Set the display property
+ * @param propertyName name of the property
+ * @param propertyValue the value
+ */
+    setDisplayProperty(propertyName, propertyValue) {
+        let displayObject = this.state.display;
+        displayObject[propertyName] = propertyValue;
+        this.setState({display: displayObject});
     }
 
     monitorBackup() {
@@ -116,9 +155,10 @@ class Backup extends React.Component {
     monitorBackupCallback(httpPayload) {
         if (httpPayload.isError()) {
             console.log("Backup.monitorBackupCallback: error " + httpPayload.getError());
-            this.setState({status: "Error"});
+            this.setState({error:{status: 500, error:httpPayload.getError()},
+                    statusOperation: ""});
         } else {
-            this.setState({backup: httpPayload.getData()})
+            this.setState({statusOperation: httpPayload.getData().statusOperation})
         }
     }
 
@@ -137,42 +177,48 @@ class Backup extends React.Component {
         this.setDisplayProperty("loading", false);
         if (httpPayload.isError()) {
             console.log("Backup.monitorBackupCallback: error " + httpPayload.getError());
-            this.setState({status: "Error"});
+            this.setState({statusOperation: "Error"});
         } else {
-            this.setState({listBackup: httpPayload.getData()})
+            this.setState(
+                { resultCall:{
+                        status: httpPayload.getData().status,
+                        error:httpPayload.getData().error,
+                        message:httpPayload.getData().message},
+                    listBackup: httpPayload.getData().listBackup})
         }
     }
-
 
 
     startBackup() {
         let uri = '/blueberry/api/backup/start?';
         console.log("backup.startBackup http[" + uri + "]");
+        var parameterBackup={ "nextId": ! this.state.parameter.explicit, "backupId": this.state.parameter.backupId}
         this.setDisplayProperty("loading", true);
         this.setState({status: ""});
         var restCallService = RestCallService.getInstance();
-        restCallService.postJson(uri, {}, this, this.startBackupCallback);
+        restCallService.postJson(uri, parameterBackup, this, this.startBackupCallback);
     }
 
     startBackupCallback(httpPayload) {
         this.setDisplayProperty("loading", false);
         if (httpPayload.isError()) {
+            debugger;
             console.log("Backup.startBackupCallback: error " + httpPayload.getError());
-            this.setState({status: "Error"});
+            this.setState({statusOperation: "Error"});
         } else {
-            this.setState({backup: httpPayload.getData()})
+            this.setState(
+                { resultCall:{
+                        status: httpPayload.getData().status,
+                        error:httpPayload.getData().error,
+                        message:httpPayload.getData().message,
+                        component:httpPayload.getData().component
+                    },
+                    backup: httpPayload.getData().backupId,
+                    statusOperation:httpPayload.getData().statusOperation});
+
         }
     }
 
-    /* Set the display property
-  * @param propertyName name of the property
-  * @param propertyValue the value
-  */
-    setDisplayProperty(propertyName, propertyValue) {
-        let displayObject = this.state.display;
-        displayObject[propertyName] = propertyValue;
-        this.setState({display: displayObject});
-    }
 
 }
 

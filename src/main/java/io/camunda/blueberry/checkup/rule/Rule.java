@@ -1,7 +1,7 @@
 package io.camunda.blueberry.checkup.rule;
 
-/** Rule
- *
+/**
+ * Rule
  */
 public interface Rule {
 
@@ -19,22 +19,25 @@ public interface Rule {
 
     class RuleInfo {
         public boolean valid;
-        private Rule rule;
         public String details;
         public RuleStatus status;
+        private final Rule rule;
 
         public RuleInfo(Rule rule) {
             this.rule = rule;
         }
-public String getName() {
+
+        public String getName() {
             return rule.getName();
-}
-public String getDetails() {
+        }
+
+        public String getDetails() {
             if (status == RuleStatus.DEACTIVATED) {
                 return "The component is deactivated, check is not necessary.";
             }
-            return details==null?"":details;
-}
+            return details == null ? "" : details;
+        }
+
         public Rule getRule() {
             return this.rule;
         }

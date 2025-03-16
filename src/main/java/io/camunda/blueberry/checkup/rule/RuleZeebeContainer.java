@@ -14,6 +14,7 @@ public class RuleZeebeContainer implements Rule {
 
     @Autowired
     BlueberryConfig blueberryConfig;
+
     @Override
     public boolean validRule() {
         // is Operate is define in the cluster?
@@ -28,15 +29,16 @@ public class RuleZeebeContainer implements Rule {
     public String getExplanations() {
         return "Zeebe must define a container to backup the data.";
     }
+
     @Override
     public RuleInfo check() {
         // get the Pod description
-RuleInfo ruleInfo = new RuleInfo(this);
-if (validRule()) {
-    ruleInfo.status = RuleStatus.FAILED;
-    ruleInfo.details="Not implemented yet";
-} else
-    ruleInfo.status=RuleStatus.DEACTIVATED;
-return ruleInfo;
+        RuleInfo ruleInfo = new RuleInfo(this);
+        if (validRule()) {
+            ruleInfo.status = RuleStatus.FAILED;
+            ruleInfo.details = "Not implemented yet";
+        } else
+            ruleInfo.status = RuleStatus.DEACTIVATED;
+        return ruleInfo;
     }
 }

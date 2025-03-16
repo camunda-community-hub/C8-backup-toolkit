@@ -68,22 +68,21 @@ class Checkup extends React.Component {
                             <tr>
                                 <td>{content.name}</td>
                                 <td>
-                                    {content.status === "FAILED" && <Tag type="red" >Failed</Tag>}
+                                    {content.status === "FAILED" && <Tag type="red">Failed</Tag>}
                                     {content.status === "CORRECT" && <Tag type="green">Correct</Tag>}
-                                    {content.status === "DEACTIVATED" && <Tag type="gray" >Deactivated</Tag>}
+                                    {content.status === "DEACTIVATED" && <Tag type="gray">Deactivated</Tag>}
                                 </td>
                                 <td>{content.detail}
                                     &nbsp;&nbsp;
-                                <OverlayTrigger
-                                    placement="top"
-                                    overlay={<Tooltip id="tooltip">{content.explanations}</Tooltip>}
-                                >
+                                    <OverlayTrigger
+                                        placement="top"
+                                        overlay={<Tooltip id="tooltip">{content.explanations}</Tooltip>}
+                                    >
                                       <span className="d-inline-block">
- <QuestionCircle size={20} className="text-muted"/>
-
+                                        <QuestionCircle size={20} className="text-muted"/>
                                       </span>
-                                </OverlayTrigger>
-                                    </td>
+                                    </OverlayTrigger>
+                                </td>
                             </tr>
                         ) : <div/>}
                         </tbody>

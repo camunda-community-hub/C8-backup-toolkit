@@ -14,10 +14,11 @@ public class RuleOperateRepository implements Rule {
 
     @Autowired
     BlueberryConfig blueberryConfig;
+
     @Override
     public boolean validRule() {
         // is Operate is define in the cluster?
-        return blueberryConfig.getOperateActuatorUrl()!=null;
+        return blueberryConfig.getOperateActuatorUrl() != null;
     }
 
     @Override
@@ -28,15 +29,16 @@ public class RuleOperateRepository implements Rule {
     public String getExplanations() {
         return "Operate must define a repository name. Elastsearch must define this repository, and map it to a valid container.";
     }
+
     @Override
     public RuleInfo check() {
         // get the Pod description
-RuleInfo ruleInfo = new RuleInfo(this);
-if (validRule()) {
-    ruleInfo.status = RuleStatus.FAILED;
-    ruleInfo.details="Not implemented yet";
-} else
-    ruleInfo.status=RuleStatus.DEACTIVATED;
-return ruleInfo;
+        RuleInfo ruleInfo = new RuleInfo(this);
+        if (validRule()) {
+            ruleInfo.status = RuleStatus.FAILED;
+            ruleInfo.details = "Not implemented yet";
+        } else
+            ruleInfo.status = RuleStatus.DEACTIVATED;
+        return ruleInfo;
     }
 }

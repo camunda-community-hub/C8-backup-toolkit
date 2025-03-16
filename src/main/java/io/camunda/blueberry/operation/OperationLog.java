@@ -6,21 +6,21 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 
 public class OperationLog {
-    Logger logger = LoggerFactory.getLogger(OperationLog.class);
-
-
     private final List<Message> listMessages = new ArrayList<>();
-
+    Logger logger = LoggerFactory.getLogger(OperationLog.class);
+    Map<String, List<String>> snapshotPerComponents = new HashMap<>();
     private String operationName;
     private int totalNumberOfSteps;
     private int currentStep;
-private long operationBeginTime;
+    private long operationBeginTime;
+
     public OperationLog() {
     }
 
     /**
      * Start an operation
-     * @param operationName the operation name
+     *
+     * @param operationName      the operation name
      * @param totalNumberOfSteps total number of step expected
      */
     public void startOperation(String operationName, int totalNumberOfSteps) {
@@ -33,17 +33,17 @@ private long operationBeginTime;
 
     /**
      * a new step is started
+     *
      * @param stepName name of the step
      */
     public void operationStep(String stepName) {
         this.currentStep++;
-        info("Operation[" + operationName + "/"+stepName+"] : " + currentStep + "/" + totalNumberOfSteps);
+        info("Operation[" + operationName + "/" + stepName + "] : " + currentStep + "/" + totalNumberOfSteps);
     }
 
     public void endOperation() {
-        info("Operation[" + operationName + "] : finished in "+(System.currentTimeMillis()-operationBeginTime)+" ms" );
+        info("Operation[" + operationName + "] : finished in " + (System.currentTimeMillis() - operationBeginTime) + " ms");
     }
-
 
     public void info(String message) {
         logger.info(message);
@@ -76,10 +76,6 @@ private long operationBeginTime;
         return listMessages;
     }
 
-    enum Type {INFO, WARNING, ERROR}
-
-    Map<String, List<String>> snapshotPerComponents = new HashMap<>();
-
     public void addSnapshotName(String component, String snapshotName) {
         List<String> listSnapshop = snapshotPerComponents.get(component);
         if (listSnapshop == null) {
@@ -89,6 +85,7 @@ private long operationBeginTime;
         snapshotPerComponents.put(component, listSnapshop);
     }
 
+    enum Type {INFO, WARNING, ERROR}
 
     public class Message {
         public Type type;
