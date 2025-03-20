@@ -24,6 +24,32 @@ public class BlueberryConfig {
     @Value("${blueberry.elasticsearchurl:http://localhost:9200}")
     private String elasticsearchUrl;
 
+    @Value("${blueberry.namespace:camunda}")
+    private String namespace;
+
+
+    @Value("${blueberry.kubeConfig:~/.kube/config}")
+    private String kubeConfig;
+
+    @Value("${blueberry.elasticsearch.containerType:}")
+    private String elasticsearchContainerName;
+    @Value("${blueberry.elasticsearch.containerName:}")
+    private String elasticsearchContainerType;
+
+    @Value("${blueberry.elasticsearch.operateContainerBasePath:/operatebackup}")
+private String operateContainerBasePath;
+
+    /**
+     * This values are temporary. KubernetesAccess should get that values directly from pôds
+     */
+    @Value("${blueberry.operateRepository}")
+    private String operateRepository;
+    @Value("${blueberry.tasklistRepository}")
+    private String tasklistRepository;
+    @Value("${blueberry.optimizeRepository}")
+    private String optimizeRepository;
+
+
     public String getOptimizeActuatorUrl() {
         return optimizeActuatorUrl;
     }
@@ -40,8 +66,39 @@ public class BlueberryConfig {
         return zeebeActuatorUrl;
     }
 
-
     public String getElasticsearchUrl() {
         return elasticsearchUrl;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getElasticsearchContainerName() {
+        return elasticsearchContainerName;
+    }
+
+    public String getElasticsearchContainerType() {
+        return elasticsearchContainerType;
+    }
+
+    public String getOperateContainerBasePath() {
+        return operateContainerBasePath;
+    }
+
+    public String getKubeConfig() {
+        return kubeConfig;
+    }
+
+    public String getOperateRepository() {
+        return operateRepository;
+    }
+
+    public String getTasklistRepository() {
+        return tasklistRepository;
+    }
+
+    public String getOptimizeRepository() {
+        return optimizeRepository;
     }
 }

@@ -5,6 +5,8 @@ import io.camunda.blueberry.config.BlueberryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Operate define a repository, and the repository exist in ElasticSearch
  */
@@ -31,14 +33,30 @@ public class RuleOptimizeRepository implements Rule {
     }
 
     @Override
+    public List<String> getUrlDocumentation() {
+        return List.of();
+    }
+
+
+    @Override
     public RuleInfo check() {
+        return operation(false);
+    }
+
+    @Override
+    public RuleInfo configure() {
+        return operation(true);
+    }
+
+    private RuleInfo operation(boolean execute) {
+
         // get the Pod description
         RuleInfo ruleInfo = new RuleInfo(this);
         if (validRule()) {
-            ruleInfo.status = RuleStatus.FAILED;
-            ruleInfo.details = "Not implemented yet";
+            ruleInfo.setStatus( RuleStatus.FAILED);
+            ruleInfo.addDetails("Not implemented yet");
         } else
-            ruleInfo.status = RuleStatus.DEACTIVATED;
+            ruleInfo.setStatus( RuleStatus.DEACTIVATED);
         return ruleInfo;
     }
 }

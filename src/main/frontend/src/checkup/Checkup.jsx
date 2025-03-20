@@ -7,7 +7,7 @@
 // -----------------------------------------------------------
 
 import React from 'react';
-import {Button, InlineNotification, Tag} from "carbon-components-react";
+import {Button, InlineNotification, Tag, Accordion, AccordionItem, Link} from "carbon-components-react";
 import {ArrowRepeat, QuestionCircle} from "react-bootstrap-icons";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -82,6 +82,39 @@ class Checkup extends React.Component {
                                         <QuestionCircle size={20} className="text-muted"/>
                                       </span>
                                     </OverlayTrigger>
+                                    <table className="w-full border-collapse border border-gray-300">
+                                        <thead>
+                                        <tr className="bg-gray-100">
+                                            <th className="border p-2">Action</th>
+                                            <th className="border p-2">Status</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {content.verifications.map((verification, index) => (
+                                            <tr key={index} className="border">
+                                                <td className="border p-2">{verification.action}</td>
+                                                <td className="border p-2">
+                                                    {verification.actionStatus === "FAILED" && <Tag type="red">Failed</Tag>}
+                                                    {verification.actionStatus === "CORRECT" && <Tag type="green">Correct</Tag>}
+                                                    {verification.actionStatus === "DEACTIVATED" && <Tag type="gray">Deactivated</Tag>}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
+                                    <p/>
+                                    {/* Documentation Links */}
+                                    <Accordion className="mt-4">
+                                        <AccordionItem title="Documentation">
+                                            {content.urldocumentation.map((url, index) => (
+                                                <p key={index}>
+                                                    <Link href={url} target="_blank">
+                                                        {url}
+                                                    </Link>
+                                                </p>
+                                            ))}
+                                        </AccordionItem>
+                                    </Accordion>
                                 </td>
                             </tr>
                         ) : <div/>}

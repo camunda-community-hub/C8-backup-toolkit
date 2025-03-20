@@ -28,7 +28,7 @@ public class CheckupRestController {
     /**
      * Check the system
      * Does Zeebe declare a container? A Type storage?
-     * Does Elasticsearch as repository for each component like OperateAPI?
+     * Does Elasticsearch as repository for each component like OperateAccess?
      *
      * @return
      */
@@ -44,10 +44,20 @@ public class CheckupRestController {
                     .sorted(Comparator.comparing(Rule.RuleInfo::getName)) // Sort by name
                     .map(ruleInfo -> {
                         Map<String, Object> info = Map.of("name", ruleInfo.getName(),
-                                "valid", ruleInfo.valid,
-                                "status", ruleInfo.status.toString(),
+                                "valid", ruleInfo.isValid(),
+                                "status", ruleInfo.getStatus().toString(),
                                 "detail", ruleInfo.getDetails(),
-                                "explanations", ruleInfo.getRule().getExplanations());
+                                "explanations", ruleInfo.getRule().getExplanations(),
+                                "urldocumentation", ruleInfo.getRule().getUrlDocumentation(),
+                                "verifications", ruleInfo.getListVerifications()
+                                        .stream()
+                                        .map(tuple -> {
+                                            return Map.of(
+                                                    "action", tuple.action(),
+                                                    "actionStatus", tuple.actionStatus().toString()
+                                            );
+                                        })
+                                        .toList());
                         return info;
                     })
                     .toList();

@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class TaskListAPI implements CamundaApplication {
+public class TaskListAccess implements CamundaApplication {
 
     private final BlueberryConfig blueberryConfig;
     private final WebActuator webActuator;
     private final KubenetesToolbox kubenetesToolbox;
-    Logger logger = LoggerFactory.getLogger(TaskListAPI.class);
+    Logger logger = LoggerFactory.getLogger(TaskListAccess.class);
 
-    public TaskListAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
+    public TaskListAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
         webActuator = new WebActuator(restTemplate);
         kubenetesToolbox = new KubenetesToolbox();
         this.blueberryConfig = blueberryConfig;

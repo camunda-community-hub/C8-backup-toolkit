@@ -7,7 +7,6 @@ import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.OperationLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,17 +17,17 @@ import java.util.List;
 @Component
 public class BackupManager {
     Logger logger = LoggerFactory.getLogger(BackupManager.class);
-    final OperateAPI operateAPI;
-    final TaskListAPI taskListAPI;
-    final OptimizeAPI optimizeAPI;
-    final ZeebeAPI zeebeAPI;
+    final OperateAccess operateAccess;
+    final TaskListAccess taskListAccess;
+    final OptimizeAccess optimizeAccess;
+    final ZeebeAccess zeebeAccess;
     private BackupJob backupJob;
 
-    public BackupManager(OperateAPI operateAPI, TaskListAPI taskListAPI, OptimizeAPI optimizeAPI, ZeebeAPI zeebeAPI) {
-        this.operateAPI = operateAPI;
-        this.taskListAPI = taskListAPI;
-        this.optimizeAPI = optimizeAPI;
-        this.zeebeAPI = zeebeAPI;
+    public BackupManager(OperateAccess operateAccess, TaskListAccess taskListAccess, OptimizeAccess optimizeAccess, ZeebeAccess zeebeAccess) {
+        this.operateAccess = operateAccess;
+        this.taskListAccess = taskListAccess;
+        this.optimizeAccess = optimizeAccess;
+        this.zeebeAccess = zeebeAccess;
     }
 
     public synchronized void startBackup(BackupParameter backupParameter) throws OperationException {
@@ -36,7 +35,7 @@ public class BackupManager {
         if (backupJob != null && backupJob.getJobStatus() == BackupJob.JOBSTATUS.INPROGRESS)
             throw new BackupException(null, 400, "Job Already in progress", "In Progress[" + backupJob.getBackupId() + "]", backupJob.getBackupId());
         // start a backup, asynchrously
-        backupJob = new BackupJob(operateAPI, taskListAPI, optimizeAPI, zeebeAPI, new OperationLog());
+        backupJob = new BackupJob(operateAccess, taskListAccess, optimizeAccess, zeebeAccess, new OperationLog());
         Long backupId = backupParameter.backupId;
         if (backupParameter.nextId) {
             logger.info("No backup is provided, calculate the new Id");
@@ -65,7 +64,7 @@ public class BackupManager {
      * @return
      */
     public List<BackupInfo> getListBackup() throws OperationException {
-        return zeebeAPI.getListBackup();
+        return zeebeAccess.getListBackup();
     }
 
     /**

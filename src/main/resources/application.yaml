@@ -3,6 +3,24 @@ blueberry:
   operateActuatorUrl: http://localhost:9601
   tasklistActuatorUrl: http://localhost:9602
   zeebeActuatorUrl: http://localhost:9600
+  kubeConfigWindows: \\wsl$\Ubuntu\home\pym\config
+  kubeConfig: \\wsl.localhost\Ubuntu\home\pym\.kube\config
+
+  # THis information are temporary. They must come from the pod itself
+  operateRepository: operaterepository
+  tasklistRepository: tasklistrepository
+  optimizeRepository : optimizerepository
+
+  elasticSearch:
+    containerType: AZURE
+    containerName: elasticsearchcontainer
+    operateContainerBasePath: /operatebackup
+
+  zeebe:
+    containerType: AZURE
+    containerName: zeebcontainer
+
+
 
 server:
   port: 9082

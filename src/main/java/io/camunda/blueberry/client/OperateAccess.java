@@ -13,16 +13,16 @@ import java.util.List;
 
 @Component
 /**
- * Manage communication to OperateAPI
+ * Manage communication to OperateAccess
  */
-public class OperateAPI implements CamundaApplication {
+public class OperateAccess implements CamundaApplication {
 
 
     private final BlueberryConfig blueberryConfig;
     private final WebActuator webActuator;
     private final KubenetesToolbox kubenetesToolbox;
 
-    public OperateAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
+    public OperateAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
         webActuator = new WebActuator(restTemplate);
         kubenetesToolbox = new KubenetesToolbox();
         this.blueberryConfig = blueberryConfig;

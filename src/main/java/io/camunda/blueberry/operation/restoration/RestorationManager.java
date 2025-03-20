@@ -1,6 +1,6 @@
 package io.camunda.blueberry.operation.restoration;
 
-import io.camunda.blueberry.client.ZeebeAPI;
+import io.camunda.blueberry.client.ZeebeAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,12 +13,12 @@ public class RestorationManager {
 
     public RestorationJob currentRestorationJob;
     @Autowired
-    ZeebeAPI zeebeAccess;
+    ZeebeAccess zeebeAccess;
 
     public void startRestoration(Long backupId) {
         // Collect the parameters : number of cluster, partitions, replica factor
 
-        ZeebeAPI.ZeebeInformation zeebeInformation = zeebeAccess.getInformation();
+        ZeebeAccess.ZeebeInformation zeebeInformation = zeebeAccess.getInformation();
         // Do that in asynchronous : start the new thread to run it
 
         // start a RestorationJob, and keep it here

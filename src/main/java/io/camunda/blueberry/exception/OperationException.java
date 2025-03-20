@@ -91,5 +91,5 @@ public class OperationException extends Exception {
 
     }
 
-    public enum BLUEBERRYERRORCODE {BACKUP_LIST, BACKUP}
+    public enum BLUEBERRYERRORCODE {BACKUP_LIST, BACKUP, CHECK, KUBERNETES_CLIENT, ELASTICSEARCH_CLIENT}
 }

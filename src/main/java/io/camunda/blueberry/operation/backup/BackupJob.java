@@ -11,20 +11,20 @@ import java.util.List;
  */
 public class BackupJob {
 
-    private final OperateAPI operateAPI;
-    private final TaskListAPI taskListAPI;
-    private final OptimizeAPI optimizeAPI;
-    private final ZeebeAPI zeebeAPI;
+    private final OperateAccess operateAccess;
+    private final TaskListAccess taskListAccess;
+    private final OptimizeAccess optimizeAccess;
+    private final ZeebeAccess zeebeAccess;
     OperationLog operationLog;
     private JOBSTATUS jobStatus = JOBSTATUS.PLANNED;
     private long backupId;
 
-    protected BackupJob(OperateAPI operateAPI, TaskListAPI taskListAPI, OptimizeAPI optimizeAPI,
-                        ZeebeAPI zeebeAPI, OperationLog operationLog) {
-        this.operateAPI = operateAPI;
-        this.taskListAPI = taskListAPI;
-        this.optimizeAPI = optimizeAPI;
-        this.zeebeAPI = zeebeAPI;
+    protected BackupJob(OperateAccess operateAccess, TaskListAccess taskListAccess, OptimizeAccess optimizeAccess,
+                        ZeebeAccess zeebeAccess, OperationLog operationLog) {
+        this.operateAccess = operateAccess;
+        this.taskListAccess = taskListAccess;
+        this.optimizeAccess = optimizeAccess;
+        this.zeebeAccess = zeebeAccess;
         this.operationLog = operationLog;
     }
 
@@ -51,7 +51,7 @@ public class BackupJob {
 
 
         // Keep only applications existing in the cluster
-        List<CamundaApplication> listApplications = List.of(operateAPI, taskListAPI, optimizeAPI)
+        List<CamundaApplication> listApplications = List.of(operateAccess, taskListAccess, optimizeAccess)
                 .stream()
                 .filter(CamundaApplication::exist)
                 .toList();
@@ -76,21 +76,21 @@ public class BackupJob {
 
         // Stop Zeebe imported
         operationLog.operationStep("Pause Zeebe");
-        zeebeAPI.pauseExporting(operationLog);
+        zeebeAccess.pauseExporting(operationLog);
 
         // backup Zeebe record
         operationLog.operationStep("Backup Zeebe Elasticsearch");
-        zeebeAPI.esBackup(backupId, operationLog);
-        zeebeAPI.monitorEsBackup(backupId, operationLog);
+        zeebeAccess.esBackup(backupId, operationLog);
+        zeebeAccess.monitorEsBackup(backupId, operationLog);
 
         // backup Zeebe
         operationLog.operationStep("Backup Zeebe");
-        zeebeAPI.backup(backupId, operationLog);
-        zeebeAPI.monitorBackup(backupId, operationLog);
+        zeebeAccess.backup(backupId, operationLog);
+        zeebeAccess.monitorBackup(backupId, operationLog);
 
         // Finish? Then stop all restoration pod
         operationLog.operationStep("Resume Zeebe");
-        zeebeAPI.resumeExporting(operationLog);
+        zeebeAccess.resumeExporting(operationLog);
 
         operationLog.endOperation();
 

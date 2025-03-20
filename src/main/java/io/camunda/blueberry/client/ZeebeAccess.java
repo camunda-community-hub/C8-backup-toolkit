@@ -25,13 +25,13 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 
 @Component
-public class ZeebeAPI extends WebActuator {
+public class ZeebeAccess extends WebActuator {
     private final ObjectMapper objectMapper;
-    Logger logger = LoggerFactory.getLogger(ZeebeAPI.class);
+    Logger logger = LoggerFactory.getLogger(ZeebeAccess.class);
     private final BlueberryConfig blueberryConfig;
     private final RestTemplate restTemplate;
 
-    public ZeebeAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public ZeebeAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper) {
         super(restTemplate);
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;

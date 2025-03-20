@@ -11,15 +11,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class OptimizeAPI implements CamundaApplication {
+public class OptimizeAccess implements CamundaApplication {
 
     private final BlueberryConfig blueberryConfig;
     private final RestTemplate restTemplate;
     private final WebActuator webActuator;
     private final KubenetesToolbox kubenetesToolbox;
-    Logger logger = LoggerFactory.getLogger(OptimizeAPI.class.getName());
+    Logger logger = LoggerFactory.getLogger(OptimizeAccess.class.getName());
 
-    OptimizeAPI(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
+    OptimizeAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
         webActuator = new WebActuator(restTemplate);
         kubenetesToolbox = new KubenetesToolbox();
 

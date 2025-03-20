@@ -1,8 +1,7 @@
 package io.camunda.blueberry.api;
 
 import io.camunda.blueberry.client.BackupInfo;
-import io.camunda.blueberry.client.ZeebeAPI;
-import io.camunda.blueberry.exception.BackupException;
+import io.camunda.blueberry.client.ZeebeAccess;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.backup.BackupJob;
 import io.camunda.blueberry.operation.backup.BackupManager;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("blueberry")
@@ -21,12 +19,12 @@ import java.util.stream.Collectors;
 
 public class BackupRestController {
 
-    private final ZeebeAPI zeebeAPI;
+    private final ZeebeAccess zeebeAccess;
     private final BackupManager backupManager;
     Logger logger = LoggerFactory.getLogger(BackupRestController.class);
 
-    public BackupRestController(ZeebeAPI zeebeAPI, BackupManager backupManager) {
-        this.zeebeAPI = zeebeAPI;
+    public BackupRestController(ZeebeAccess zeebeAccess, BackupManager backupManager) {
+        this.zeebeAccess = zeebeAccess;
         this.backupManager = backupManager;
     }
 
@@ -70,7 +68,7 @@ public class BackupRestController {
         Map<String, Object> result = new HashMap<>();
         try {
             logger.debug("Rest [/api/backup/list]");
-            List<BackupInfo> listBackup = zeebeAPI.getListBackup();
+            List<BackupInfo> listBackup = zeebeAccess.getListBackup();
 
             logger.info("Rest [/api/backup/list] found {} backups", listBackup.size());
 
