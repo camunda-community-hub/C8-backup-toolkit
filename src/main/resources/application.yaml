@@ -32,9 +32,16 @@ blueberry:
     tasklistContainerBasePath: /tasklist
     optimizeContainerBasePath: /optimize
     zeebeRecordContainerBasePath: /zeeberecord
+    azure:
+      containerName: "zeeberecordcontainer"
+      basePath: "zeeberecordbackup"
+    s3:
+      bucket: "joeymanagementbucket"
+      basePath: "zeeberecordbackup"
+      region: "us-east-2"
 
   zeebe:
-    containerType: AZURE
+    containerType: azure
     containerName: zeebcontainer
     zeebeRecordRepository: camunda_zeebe_records_backup
 

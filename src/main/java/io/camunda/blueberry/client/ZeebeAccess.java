@@ -103,7 +103,7 @@ public class ZeebeAccess extends WebActuator {
 
     public void createSnapshot(OperationLog operationLog) {
         ZeebeInformation zeebeInformation = getInformation();
-        String zeebeEsRepository = zeebeInformation.esRepository;
+        String zeebeEsRepository = blueberryConfig.getZeebeRecordRepository();
 
         String storageType = blueberryConfig.getStorageType(); // Fetch storage type (e.g., "s3" or "azure")
         String url = blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository();

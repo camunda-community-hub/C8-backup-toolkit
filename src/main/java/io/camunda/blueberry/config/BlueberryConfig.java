@@ -39,6 +39,16 @@ public class BlueberryConfig {
 
     @Value("${blueberry.elasticsearch.operateContainerBasePath:/operate}")
     private String operateContainerBasePath;
+    @Value("${blueberry.elasticsearch.tasklistContainerBasePath:/tasklist}")
+    private String tasklistContainerBasePath;
+    @Value("${blueberry.elasticsearch.optimizeContainerBasePath:/optimize}")
+    private String optimizeContainerBasePath;
+    @Value("${blueberry.elasticsearch.zeebeRecordContainerBasePath:/zeeberecord}")
+    private String zeebeRecordContainerBasePath;
+
+
+    @Value("${blueberry.zeebe.zeebeRecordRepository:camunda_zeebe_records_backup}")
+    private String zeebeRecordRepository;
 
     /**
      * These values are temporary. KubernetesAccess should get that values directly from pôds
