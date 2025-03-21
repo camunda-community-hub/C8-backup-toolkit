@@ -16,9 +16,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("blueberry")
 
-public class PlatformRestController {
+public class ConfigurationRestController {
 
-    Logger logger = LoggerFactory.getLogger(PlatformRestController.class);
+    Logger logger = LoggerFactory.getLogger(ConfigurationRestController.class);
 
     @Autowired
     private PlatformManager platformManager;
@@ -30,10 +30,10 @@ public class PlatformRestController {
      *
      * @return
      */
-    @GetMapping(value = "/api/platform/check", produces = "application/json")
+    @GetMapping(value = "/api/configuration/check", produces = "application/json")
     public List<Map<@NotNull String, Object>> check() {
         try {
-            logger.debug("Rest [/api/platform/check]");
+            logger.debug("Rest [/api/configuration/check]");
             List<Rule.RuleInfo> listRules = platformManager.checkAllRules();
             logger.info("End Rest [/api/platform/check] {} rules", listRules.size());
             return listRules.stream()
@@ -63,11 +63,11 @@ public class PlatformRestController {
         }
     }
 
-    @PostMapping(value = "/api/platform/configure", produces = "application/json")
+    @PostMapping(value = "/api/configuration/configure", produces = "application/json")
     public List<Map<@NotNull String, Object>> configure() {
 
         try {
-            logger.debug("Rest [/api/platform/check]");
+            logger.debug("Rest [/api/configuration/check]");
             List<Rule.RuleInfo> listRules = platformManager.configure();
             logger.info("End Rest [/api/platform/configure] {} rules", listRules.size());
             return listRules.stream()
@@ -95,5 +95,4 @@ public class PlatformRestController {
             throw new RuntimeException(e);
         }
     }
-
 }

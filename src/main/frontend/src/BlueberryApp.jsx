@@ -16,8 +16,8 @@ import Dashboard from "./dashboard/Dashboard";
 import Scheduler from "./scheduler/Scheduler";
 import Backup from "./backup/Backup"
 import Restore from "./restore/Restore"
-import Platform from "./platform/Platform"
-import Configuration from "./configuration/Configuration";
+import Configuration from "./configuration/Configuration"
+import Parameters from "./parameters/Parameters";
 import OperationLog from "./operationlog/OperationLog"
 import HeaderMessage from "./HeaderMessage/HeaderMessage";
 
@@ -26,8 +26,8 @@ const FRAME_NAME = {
   BACKUP: "Backup",
   SCHEDULER: "Scheduler",
   RESTORE: "Restore",
-  CHECKUP: "Platform",
-  CONFIGURATION: "Configuration"
+  CONFIGURATION: "Configuration",
+  PARAMETERS: "Parameters"
 
 }
 
@@ -55,28 +55,28 @@ class BlueberryApp extends React.Component {
 
               <Nav.Link onClick={() => {
                 this.clickMenu(FRAME_NAME.DASHBOARD)
-              }}>Dashboard</Nav.Link>
+              }}>{FRAME_NAME.DASHBOARD}</Nav.Link>
 
               <Nav.Link onClick={() => {
                 this.clickMenu(FRAME_NAME.BACKUP)
-              }}>Backup</Nav.Link>
+              }}>{FRAME_NAME.BACKUP}</Nav.Link>
 
               <Nav.Link onClick={() => {
                 this.clickMenu(FRAME_NAME.RESTORE)
-              }}>Restore</Nav.Link>
+              }}>{FRAME_NAME.RESTORE}</Nav.Link>
 
               <Nav.Link onClick={() => {
                 this.clickMenu(FRAME_NAME.SCHEDULER)
-              }}>Scheduler</Nav.Link>
+              }}>{FRAME_NAME.SCHEDULER}</Nav.Link>
 
-
-              <Nav.Link onClick={() => {
-                this.clickMenu(FRAME_NAME.CHECKUP)
-              }}>Checkup</Nav.Link>
 
               <Nav.Link onClick={() => {
                 this.clickMenu(FRAME_NAME.CONFIGURATION)
-              }}>Configuration</Nav.Link>
+              }}>{FRAME_NAME.CONFIGURATION}</Nav.Link>
+
+              <Nav.Link onClick={() => {
+                this.clickMenu(FRAME_NAME.PARAMETERS)
+              }}>{FRAME_NAME.PARAMETERS}</Nav.Link>
 
             </Nav>
           </Container>
@@ -86,8 +86,8 @@ class BlueberryApp extends React.Component {
         {this.state.frameContent === FRAME_NAME.BACKUP && <Backup/>}
         {this.state.frameContent === FRAME_NAME.SCHEDULER && <Scheduler/>}
         {this.state.frameContent === FRAME_NAME.RESTORE && <Restore/>}
-        {this.state.frameContent === FRAME_NAME.CHECKUP && <Platform/>}
         {this.state.frameContent === FRAME_NAME.CONFIGURATION && <Configuration/>}
+        {this.state.frameContent === FRAME_NAME.PARAMETERS && <Parameters/>}
 
 
       </div>);

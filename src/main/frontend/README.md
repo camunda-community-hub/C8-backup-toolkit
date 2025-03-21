@@ -81,7 +81,7 @@ here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-siz
 This section has moved
 here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
 
-### Advanced Configuration
+### Advanced Parameters
 
 This section has moved
 here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
