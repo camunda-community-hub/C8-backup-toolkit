@@ -1,4 +1,4 @@
-package io.camunda.blueberry.checkup.rule;
+package io.camunda.blueberry.platform.rule;
 
 
 import io.camunda.blueberry.config.BlueberryConfig;
@@ -11,7 +11,7 @@ import java.util.List;
  * Operate define a repository, and the repository exist in ElasticSearch
  */
 @Component
-public class RuleOptimizeRepository implements Rule {
+public class RuleZeebeContainer implements Rule {
 
 
     @Autowired
@@ -20,17 +20,18 @@ public class RuleOptimizeRepository implements Rule {
     @Override
     public boolean validRule() {
         // is Operate is define in the cluster?
-        return blueberryConfig.getOptimizeActuatorUrl() != null;
+        return false;
     }
 
     @Override
     public String getName() {
-        return "Optimize Repository";
+        return "Zeebe Container";
     }
 
     public String getExplanations() {
-        return "Optimize must define a repository name. Elastsearch must define this repository, and map it to a valid container.";
+        return "Zeebe must define a container to backup the data.";
     }
+
 
     @Override
     public List<String> getUrlDocumentation() {

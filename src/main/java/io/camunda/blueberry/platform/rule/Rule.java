@@ -1,4 +1,4 @@
-package io.camunda.blueberry.checkup.rule;
+package io.camunda.blueberry.platform.rule;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,7 @@ public interface Rule {
         private RuleStatus status = RuleStatus.INPROGRESS;
         private final Rule rule;
 
-        public record Tuple(String action, RuleStatus actionStatus) {
+        public record Tuple(String action, RuleStatus actionStatus, String command) {
         }
 
         private List<Tuple> listVerifications = new ArrayList();
@@ -90,8 +90,8 @@ public interface Rule {
             return listVerifications;
         }
 
-        public void addListVerifications(String action, RuleStatus actionStatus) {
-            this.listVerifications.add(new Tuple(action, actionStatus));
+        public void addVerifications(String action, RuleStatus actionStatus, String command) {
+            this.listVerifications.add(new Tuple(action, actionStatus, command));
         }
 
 

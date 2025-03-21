@@ -11,14 +11,18 @@ blueberry:
   tasklistRepository: tasklistrepository
   optimizeRepository : optimizerepository
 
-  elasticSearch:
-    containerType: AZURE
+  elasticsearch:
+    containerType: azure
     containerName: elasticsearchcontainer
-    operateContainerBasePath: /operatebackup
+    operateContainerBasePath: /operate
+    tasklistContainerBasePath: /tasklist
+    optimizeContainerBasePath: /optimize
+    zeebeRecordContainerBasePath: /zeeberecord
 
   zeebe:
     containerType: AZURE
     containerName: zeebcontainer
+    zeebeRecordRepository: camunda_zeebe_records_backup
 
 
 

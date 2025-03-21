@@ -16,7 +16,7 @@ import Dashboard from "./dashboard/Dashboard";
 import Scheduler from "./scheduler/Scheduler";
 import Backup from "./backup/Backup"
 import Restore from "./restore/Restore"
-import Checkup from "./checkup/Checkup"
+import Platform from "./platform/Platform"
 import Configuration from "./configuration/Configuration";
 import OperationLog from "./operationlog/OperationLog"
 import HeaderMessage from "./HeaderMessage/HeaderMessage";
@@ -26,7 +26,7 @@ const FRAME_NAME = {
   BACKUP: "Backup",
   SCHEDULER: "Scheduler",
   RESTORE: "Restore",
-  CHECKUP: "CheckUp",
+  CHECKUP: "Platform",
   CONFIGURATION: "Configuration"
 
 }
@@ -86,7 +86,7 @@ class BlueberryApp extends React.Component {
         {this.state.frameContent === FRAME_NAME.BACKUP && <Backup/>}
         {this.state.frameContent === FRAME_NAME.SCHEDULER && <Scheduler/>}
         {this.state.frameContent === FRAME_NAME.RESTORE && <Restore/>}
-        {this.state.frameContent === FRAME_NAME.CHECKUP && <Checkup/>}
+        {this.state.frameContent === FRAME_NAME.CHECKUP && <Platform/>}
         {this.state.frameContent === FRAME_NAME.CONFIGURATION && <Configuration/>}
 
 

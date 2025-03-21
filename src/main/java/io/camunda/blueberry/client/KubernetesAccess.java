@@ -14,7 +14,7 @@ import java.util.List;
 
 
 @Component
-public class KubernetesAccess {
+public class KubernetesAccess extends ContainerAccess{
     Logger logger = LoggerFactory.getLogger(KubernetesAccess.class);
 
     BlueberryConfig blueberryConfig;
@@ -24,7 +24,12 @@ public class KubernetesAccess {
         this.blueberryConfig = blueberryConfig;
     }
 
-    public void connection() throws KubernetesException {
+    /**
+     * Connect to the Kubernetes cluster
+     * @return
+     */
+    public OperationResult connection() {
+        OperationResult result = new OperationResult();
         try {
             if (blueberryConfig.getKubeConfig() != null) {
                 logger.info("Connection to Kubernetes via KubeConfig[{}]", blueberryConfig.getKubeConfig());
@@ -35,11 +40,13 @@ public class KubernetesAccess {
                 logger.info("Connection to Kubernetes via Default Client");
                 client = new DefaultKubernetesClient();
             }
+            result.success=true;
         } catch (Exception e) {
             logger.error(e.getMessage());
-            throw new KubernetesException(OperationException.BLUEBERRYERRORCODE.KUBERNETES_CLIENT, 400, "Can't access Kubernetes", "Can't connect to Kubernetes using");
-
+            result.success=false;
+            result.details= "Can't connect to Kubernetes";
         }
+        return result;
     }
 
 
@@ -47,20 +54,67 @@ public class KubernetesAccess {
         return client != null;
     }
 
-    public String getRepositoryName(CamundaApplication.COMPONENT component, String nameSpace)  throws KubernetesException {
-        // Soon: ask the pod informatoin and read it from it
-        switch (component) {
-            case OPERATE:
-                return blueberryConfig.getOperateRepository();
-            case TASKLIST:
-                return blueberryConfig.getTasklistRepository();
-            case OPTIMIZE:
-                return blueberryConfig.getOptimizeRepository();
-        }
-        return null;
+    /**
+     * return true tif the component exist in the cluster
+     * @param component to check
+     * @param nameSpace namespace
+     * @return the result. operationResult.resultBoolean is true if the component exist
+     *
+     */
+    public OperationResult existComponent(CamundaApplication.COMPONENT component, String nameSpace) {
+        OperationResult operationResult = new OperationResult();
+        operationResult.success=true;
+        operationResult.command="kubectl get pods | grep "+component.toString();
+        operationResult.resultBoolean=true;
+        return operationResult;
     }
 
-    public List<Pod> getContainerInformation(String podName, String namespace) throws KubernetesException {
+    /**
+     * Explore the component to retrieve the repository. For example, Operate defined a variable CAMUNDA_OPERATE_BACKUP_REPOSITORY_NAME
+     * @param component component to explore
+     * @param nameSpace namespace
+     * @return the result
+     */
+    public OperationResult getRepositoryName(CamundaApplication.COMPONENT component, String nameSpace)  {
+        // Soon: ask the pod informatoin and read it from it
+        OperationResult operationResult = new OperationResult();
+        switch (component) {
+            case OPERATE:
+                operationResult.resultSt=blueberryConfig.getOperateRepository();
+                operationResult.success=true;
+                operationResult.command = "kubectl describe pod operate";
+                break;
+
+            case TASKLIST:
+                operationResult.resultSt= blueberryConfig.getTasklistRepository();
+                operationResult.success=true;
+                operationResult.command = "kubectl describe pod tasklist";
+                break;
+
+            case OPTIMIZE:
+                operationResult.resultSt = blueberryConfig.getOptimizeRepository();
+                operationResult.success=true;
+                operationResult.command = "kubectl describe pod optimize";
+                break;
+
+
+            default:
+                operationResult.success = false;
+                operationResult.details = "Unknown component";
+                break;
+        }
+        return operationResult;
+    }
+
+
+    /**
+     * List all pods containing the name <podName> in a given namespace.
+     * @param podName filter pods by the name (contains: a deployment add ID after the name)
+     * @param namespace namespace to search
+     * @return list of pods
+     * @throws KubernetesException
+     */
+    private List<Pod> getContainerInformation(String podName, String namespace) throws KubernetesException {
 
         try {
             // Namespace where the pods are running

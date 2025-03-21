@@ -74,16 +74,21 @@ public class ZeebeAccess extends WebActuator {
      */
     public void esBackup(Long backupId, OperationLog operationLog) {
         ZeebeInformation zeebeInformation = getInformation();
-        String zeebeEsRepository = zeebeInformation.esRepository;
+        String zeebeEsRepository = blueberryConfig.getZeebeRecordRepository();
 
         HttpEntity<?> zeebeEsBackupRequest = new HttpEntity<>(Map.of("indices", "zeebe-record*", "feature_states", List.of("none")));
         ResponseEntity<String> zeebeEsBackupResponse = restTemplate.exchange(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + zeebeEsRepository + "/" + backupId, HttpMethod.PUT, zeebeEsBackupRequest, String.class);
         operationLog.info("Start Zeebe ES Backup on [" + zeebeEsRepository + "] response: " + zeebeEsBackupResponse.getStatusCode().value() + " [" + zeebeEsBackupResponse.getBody() + "]");
     }
 
+    /**
+     * Monitor and wait for the end of the backup
+     * @param backupId backupId to monitor and wait
+     * @param operationLog report status
+     */
     public void monitorEsBackup(Long backupId, OperationLog operationLog) {
         ZeebeInformation zeebeInformation = getInformation();
-        String zeebeEsRepository = zeebeInformation.esRepository;
+        String zeebeEsRepository = blueberryConfig.getZeebeRecordRepository();
 
         ResponseEntity<ZeebeBackupStatusResponse> backupStatusResponse = null;
         do {
@@ -187,7 +192,6 @@ public class ZeebeAccess extends WebActuator {
         public int clusterSize;
         public int numberOfPartitions;
         public int replicaFactor;
-        public String esRepository;
     }
 
 

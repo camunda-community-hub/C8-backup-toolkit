@@ -1,12 +1,11 @@
-package io.camunda.blueberry.checkup.rule;
+package io.camunda.blueberry.platform.rule;
 
 
 import io.camunda.blueberry.client.CamundaApplication;
+import io.camunda.blueberry.client.ContainerAccess;
 import io.camunda.blueberry.client.ElasticSearchAccess;
 import io.camunda.blueberry.client.KubernetesAccess;
 import io.camunda.blueberry.config.BlueberryConfig;
-import io.camunda.blueberry.exception.ElasticsearchException;
-import io.camunda.blueberry.exception.KubernetesException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,8 +15,7 @@ import java.util.List;
  * Operate define a repository, and the repository exist in ElasticSearch
  */
 @Component
-public class RuleOperateRepository implements Rule {
-
+public class RuleTasklistRepository implements Rule {
 
     @Autowired
     BlueberryConfig blueberryConfig;
@@ -31,23 +29,24 @@ public class RuleOperateRepository implements Rule {
     @Override
     public boolean validRule() {
         // is Operate is define in the cluster?
-        return blueberryConfig.getOperateActuatorUrl() != null;
+        return blueberryConfig.getTasklistActuatorUrl() != null;
     }
 
     @Override
     public String getName() {
-        return "Operate Repository";
+        return "Tasklist Repository";
     }
 
     public String getExplanations() {
-        return "Operate must define a repository name. Elasticsearch must define this repository, and map it to a valid container.";
+        return "Tasklist must define a repository name. Elastsearch must define this repository, and map it to a valid container.";
     }
+
 
     @Override
     public List<String> getUrlDocumentation() {
-        return List.of("https://docs.camunda.io/docs/self-managed/operational-guides/backup-restore/operate-tasklist-backup/",
-                "https://github.com/camunda-community-hub/C8-backup-toolkit/blob/main/README.md");
+        return List.of();
     }
+
 
     @Override
     public RuleInfo check() {
@@ -60,6 +59,7 @@ public class RuleOperateRepository implements Rule {
     }
 
     private RuleInfo operation(boolean execute) {
+
         boolean accessPodRepository = false;
         boolean accessElasticsearchRepository = false;
         boolean createElasticsearchRepository = false;
@@ -72,27 +72,29 @@ public class RuleOperateRepository implements Rule {
             // ---------- First step, ask Operate for the name of the repository
             // the rule is in progress
             ruleInfo.setStatus(RuleStatus.INPROGRESS);
-            String operateRepository = null;
-            try {
-                operateRepository = kubernetesAccess.getRepositoryName(CamundaApplication.COMPONENT.OPERATE, blueberryConfig.getNamespace());
-                if (operateRepository == null) {
-                    ruleInfo.addDetails("Can't access the Repository name in the pod, or does not exist");
-                    ruleInfo.setStatus(RuleStatus.FAILED);
-                }
-
-            } catch (KubernetesException e) {
+            String tasklistRepository = null;
+            ContainerAccess.OperationResult operationResult = kubernetesAccess.getRepositoryName(CamundaApplication.COMPONENT.TASKLIST, blueberryConfig.getNamespace());
+            if (!operationResult.success) {
+                ruleInfo.addDetails("Can't access the Repository name in the pod, or does not exist");
+                ruleInfo.addDetails(operationResult.details);
                 ruleInfo.setStatus(RuleStatus.FAILED);
-                ruleInfo.addDetails(e.getMessage());
+            } else {
+                tasklistRepository = operationResult.resultSt;
+
             }
-            ruleInfo.addListVerifications("Access pod repository, retrieve [" + operateRepository + "]", ruleInfo.inProgress() ? RuleStatus.CORRECT : RuleStatus.FAILED);
+            ruleInfo.addVerifications("Access pod repository, retrieve [" + tasklistRepository + "]", ruleInfo.inProgress() ? RuleStatus.CORRECT : RuleStatus.FAILED,
+                    operationResult.command);
 
 
             //------------ Second step, verify if the repository exist in elasticSearch
             if (ruleInfo.inProgress()) {
                 // now check if the repository exist in Elastic search
-                accessElasticsearchRepository = elasticSearchAccess.existRepository(operateRepository);
-                ruleInfo.addListVerifications("Check Elasticsearch repository [" + operateRepository + "]",
-                        accessElasticsearchRepository ? RuleStatus.CORRECT : RuleStatus.FAILED);
+                operationResult = elasticSearchAccess.existRepository(tasklistRepository);
+                accessElasticsearchRepository = operationResult.resultBoolean;
+                ruleInfo.addVerifications("Check Elasticsearch repository [" + tasklistRepository + "] :"
+                                + operationResult.details,
+                        accessElasticsearchRepository ? RuleStatus.CORRECT : RuleStatus.FAILED,
+                        operationResult.command);
 
                 // if the repository exist, then we stop the rule execution here
                 if (accessElasticsearchRepository) {
@@ -110,25 +112,28 @@ public class RuleOperateRepository implements Rule {
 
             // Third step, create the repository if asked
             if (execute && ruleInfo.inProgress()) {
-                try {
-                    elasticSearchAccess.createRepository(operateRepository,
-                            blueberryConfig.getElasticsearchContainerType(),
-                            blueberryConfig.getElasticsearchContainerName(),
-                            blueberryConfig.getOperateContainerBasePath());
+
+                operationResult = elasticSearchAccess.createRepository(tasklistRepository,
+                        blueberryConfig.getElasticsearchContainerType(),
+                        blueberryConfig.getElasticsearchContainerName(),
+                        blueberryConfig.getTasklistContainerBasePath());
+                if (operationResult.success) {
                     ruleInfo.addDetails("Repository is created in ElasticSearch");
                     ruleInfo.setStatus(RuleStatus.CORRECT);
-                } catch (ElasticsearchException e) {
-                    ruleInfo.addDetails("Error when creating the repository in ElasticSearch :" + e.getMessage());
+                } else {
+                    ruleInfo.addDetails("Error when creating the repository in ElasticSearch :" + operationResult.details);
                     ruleInfo.setStatus(RuleStatus.FAILED);
                 }
-                ruleInfo.addListVerifications("Check Elasticsearch repository [" + operateRepository
+                ruleInfo.addVerifications("Check Elasticsearch repository [" + tasklistRepository
                                 + "] ContainerType[" + blueberryConfig.getElasticsearchContainerType()
                                 + "] ContainerName[" + blueberryConfig.getElasticsearchContainerName()
                                 + "] basePath[" + blueberryConfig.getOperateContainerBasePath() + "]",
-                        ruleInfo.getStatus());
+                        ruleInfo.getStatus(),
+                        operationResult.command);
 
             }
         }
         return ruleInfo;
     }
+
 }

@@ -20,13 +20,15 @@ public class RestorationJob {
 
         // Scale down Zeebe
 
-        // create one pod per cluster size, and start it
+        // create one restore pod per cluster size, and start it
 
         // monitor each pod
 
         // Finish? Then stop all restoration pod
 
         // scale up Zeebe
+
+        // restore elastic search
 
         operationLog.info("End of Restoration in " + (System.currentTimeMillis() - beginTime) + " ms");
     }

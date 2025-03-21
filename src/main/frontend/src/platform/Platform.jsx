@@ -7,13 +7,13 @@
 // -----------------------------------------------------------
 
 import React from 'react';
-import {Button, InlineNotification, Tag, Accordion, AccordionItem, Link} from "carbon-components-react";
-import {ArrowRepeat, QuestionCircle} from "react-bootstrap-icons";
+import {Accordion, AccordionItem, Button, InlineNotification, Link, Tag} from "carbon-components-react";
+import {ArrowRepeat, QuestionCircle, Terminal } from "react-bootstrap-icons";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import RestCallService from "../services/RestCallService";
 
-class Checkup extends React.Component {
+class Platform extends React.Component {
 
 
     constructor(_props) {
@@ -51,6 +51,15 @@ class Checkup extends React.Component {
                                 }}
                                 disabled={this.state.display.loading}>
                             <ArrowRepeat/> Checkup
+                        </Button>
+                    </div>
+                    <div className="col-md-2">
+                        <Button className="btn btn-danger btn-sm"
+                                onClick={() => {
+                                    this.configure()
+                                }}
+                                disabled={this.state.display.loading}>
+                            Configure
                         </Button>
                     </div>
                 </div>
@@ -92,11 +101,23 @@ class Checkup extends React.Component {
                                         <tbody>
                                         {content.verifications.map((verification, index) => (
                                             <tr key={index} className="border">
-                                                <td className="border p-2">{verification.action}</td>
+                                                <td className="border p-2">{verification.action}
+                                                    <OverlayTrigger
+                                                        placement="top"
+                                                        overlay={<Tooltip id="tooltip">{verification.command}</Tooltip>}
+                                                    >
+                                                      <span className="d-inline-block">
+                                                        <Terminal size={20} className="text-muted"/>
+                                                      </span>
+                                                    </OverlayTrigger>
+                                                </td>
                                                 <td className="border p-2">
-                                                    {verification.actionStatus === "FAILED" && <Tag type="red">Failed</Tag>}
-                                                    {verification.actionStatus === "CORRECT" && <Tag type="green">Correct</Tag>}
-                                                    {verification.actionStatus === "DEACTIVATED" && <Tag type="gray">Deactivated</Tag>}
+                                                    {verification.actionStatus === "FAILED" &&
+                                                        <Tag type="red">Failed</Tag>}
+                                                    {verification.actionStatus === "CORRECT" &&
+                                                        <Tag type="green">Correct</Tag>}
+                                                    {verification.actionStatus === "DEACTIVATED" &&
+                                                        <Tag type="gray">Deactivated</Tag>}
                                                 </td>
                                             </tr>
                                         ))}
@@ -128,19 +149,29 @@ class Checkup extends React.Component {
 
 
     checkup() {
-        let uri = '/blueberry/api/checkup/check?';
-        console.log("checkup.checkup http[" + uri + "]");
+        let uri = '/blueberry/api/platform/check?';
+        console.log("platform.checkup http[" + uri + "]");
 
         this.setDisplayProperty("loading", true);
         this.setState({status: ""});
         var restCallService = RestCallService.getInstance();
-        restCallService.getJson(uri, this, this.refreshCheckupCallback);
+        restCallService.getJson(uri, this, this.refreshPlatformCallback);
     }
 
-    refreshCheckupCallback(httpPayload) {
+    configure() {
+        let uri = '/blueberry/api/platform/configure?';
+        console.log("platform.configure http[" + uri + "]");
+
+        this.setDisplayProperty("loading", true);
+        this.setState({status: ""});
+        var restCallService = RestCallService.getInstance();
+        restCallService.postJson(uri, {"configure": "yes"}, this, this.refreshPlatformCallback);
+    }
+
+    refreshPlatformCallback(httpPayload) {
         this.setDisplayProperty("loading", false);
         if (httpPayload.isError()) {
-            console.log("Checkup.startBackupCallback: error " + httpPayload.getError());
+            console.log("Platform.startBackupCallback: error " + httpPayload.getError());
             this.setState({status: "Error"});
         } else {
             this.setState({listChecks: httpPayload.getData()})
@@ -158,4 +189,4 @@ class Checkup extends React.Component {
     }
 }
 
-export default Checkup;
+export default Platform;

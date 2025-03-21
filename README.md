@@ -24,3 +24,14 @@ Check the [Backup procedure](doc/restore/README.md)
 
 The restore is complex, because it's not only based on REST API. Zeebe has a specific tool to restore the data.
 Check the [Restoration procedure](doc/restore/README.md)
+
+# Todo
+Dashboard:
+  Zeebe status (pause/active)
+  Number of backup
+  Backup in progress?
+  Configuration Ok?
+
+Backup:
+    Failed during execution, Zeebe is resume?
+    

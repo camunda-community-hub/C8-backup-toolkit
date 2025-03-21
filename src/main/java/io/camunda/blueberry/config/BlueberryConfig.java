@@ -32,15 +32,24 @@ public class BlueberryConfig {
     private String kubeConfig;
 
     @Value("${blueberry.elasticsearch.containerType:}")
-    private String elasticsearchContainerName;
-    @Value("${blueberry.elasticsearch.containerName:}")
     private String elasticsearchContainerType;
+    @Value("${blueberry.elasticsearch.containerName:}")
+    private String elasticsearchContainerName;
+    @Value("${blueberry.elasticsearch.operateContainerBasePath:/operate}")
+    private String operateContainerBasePath;
+    @Value("${blueberry.elasticsearch.tasklistContainerBasePath:/tasklist}")
+    private String tasklistContainerBasePath;
+    @Value("${blueberry.elasticsearch.optimizeContainerBasePath:/optimize}")
+    private String optimizeContainerBasePath;
+    @Value("${blueberry.elasticsearch.zeebeRecordContainerBasePath:/zeeberecord}")
+    private String zeebeRecordContainerBasePath;
 
-    @Value("${blueberry.elasticsearch.operateContainerBasePath:/operatebackup}")
-private String operateContainerBasePath;
+
+    @Value("${blueberry.zeebe.zeebeRecordRepository:camunda_zeebe_records_backup}")
+    private String zeebeRecordRepository;
 
     /**
-     * This values are temporary. KubernetesAccess should get that values directly from pôds
+     * These values are temporary. KubernetesAccess should get that values directly from pôds
      */
     @Value("${blueberry.operateRepository}")
     private String operateRepository;
@@ -84,6 +93,22 @@ private String operateContainerBasePath;
 
     public String getOperateContainerBasePath() {
         return operateContainerBasePath;
+    }
+
+    public String getZeebeRecordRepository() {
+        return zeebeRecordRepository;
+    }
+
+    public String getOptimizeContainerBasePath() {
+        return optimizeContainerBasePath;
+    }
+
+    public String getTasklistContainerBasePath() {
+        return tasklistContainerBasePath;
+    }
+
+    public String getZeebeRecordContainerBasePath() {
+        return zeebeRecordContainerBasePath;
     }
 
     public String getKubeConfig() {

@@ -62,6 +62,7 @@ class RestCallService {
 
   // PostJson
   postJson(uri, param, objToCall, fctToCallback) {
+    debugger;
     let headers = {'Content-Type': 'application/json'};
     param.timezoneoffset = (new Date()).getTimezoneOffset();
     console.log("RestCallService.postJson: timezoneoffset=" + param.timezoneoffset);
@@ -73,7 +74,7 @@ class RestCallService {
     var selfUri = uri;
     axios.post(uri, param, requestOptions)
       .then(axiosPayload => {
-        // console.log("RestCallService.getJson: payload:"+JSON.stringify(axiosPayload.data));
+        console.log("RestCallService.getJson: payload:"+JSON.stringify(axiosPayload.data));
         if (fctToCallback != null) {
           let httpResponse = new HttpResponse(axiosPayload, null);
           fctToCallback.call(objToCall, httpResponse);
