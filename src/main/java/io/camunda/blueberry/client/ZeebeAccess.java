@@ -65,6 +65,82 @@ public class ZeebeAccess extends WebActuator {
     /*                                                                      */
     /* ******************************************************************** */
 
+    /**curl PUT 'http://localhost:9200/_snapshot/zeeberecordrepository' -H 'Content-Type: application/json' \
+            -d '{
+            "type": "s3",
+            "settings": {
+        "bucket": "joeymanagementbucket",
+                "base_path": "zeeberecordbackup",
+                "region": "us-east-2"
+    }
+    }'**/
+    public void ensureZeebeSnapshotExists(OperationLog operationLog) {
+        String esUrl = blueberryConfig.getElasticsearchUrl();
+        String zeebeRepository = blueberryConfig.getZeebeRepository();
+        String snapshotUrl = esUrl + "/_snapshot/_all";  // Snapshot URL
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(snapshotUrl, HttpMethod.GET, null, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                JsonNode repositories = new ObjectMapper().readTree(response.getBody());
+
+                JsonNode zeebeRepositoryJsonNode = repositories.get(zeebeRepository);
+                if (zeebeRepositoryJsonNode != null) {
+                    operationLog.info("Repository " + zeebeRepository + " exists.");
+                    // Optionally print repository details
+                    operationLog.info("Repository Details: " + zeebeRepositoryJsonNode.toString());
+                } else {
+                    operationLog.info("Repository '" + zeebeRepository + "' does not exist.");
+                    // Only create the snapshot if repository does not exist
+                    createSnapshot(operationLog);
+                }
+            }
+        } catch (Exception e) {
+            operationLog.error("Error checking repository existence: " + e.getMessage());
+        }
+    }
+
+    public void createSnapshot(OperationLog operationLog) {
+        ZeebeInformation zeebeInformation = getInformation();
+        String zeebeEsRepository = zeebeInformation.esRepository;
+
+        String storageType = blueberryConfig.getStorageType(); // Fetch storage type (e.g., "s3" or "azure")
+        String url = blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository();
+
+        Map<String, Object> settings;
+        String type;
+
+        if ("s3".equalsIgnoreCase(storageType)) {
+            type = "s3";
+            settings = Map.of(
+                    "bucket", blueberryConfig.getS3Bucket(),
+                    "base_path", blueberryConfig.getS3BasePath(),
+                    "region", blueberryConfig.getS3Region()
+            );
+        } else if ("azure".equalsIgnoreCase(storageType)) {
+            type = "azure";
+            settings = Map.of(
+                    "container", blueberryConfig.getAzureContainer(),
+                    "base_path", blueberryConfig.getAzureBasePath());
+        } else {
+            throw new IllegalArgumentException("Unsupported storage type: " + storageType);
+        }
+
+        Map<String, Object> requestBody = Map.of(
+                "type", type,
+                "settings", settings
+        );
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody);
+
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, String.class);
+
+        operationLog.info("Created Zeebe ES Snapshot Repository on [" + zeebeEsRepository + "] with storage type [" + type + "] response: " +
+                response.getStatusCode().value() + " [" + response.getBody() + "]");
+    }
+
+
     /**
      * curl -X PUT http://localhost:9200/_snapshot/zeeberecordrepository/12 -H 'Content-Type: application/json'   \
      * -d '{ "indices": "zeebe-record*", "feature_states": ["none"]}'
@@ -77,7 +153,7 @@ public class ZeebeAccess extends WebActuator {
         String zeebeEsRepository = zeebeInformation.esRepository;
 
         HttpEntity<?> zeebeEsBackupRequest = new HttpEntity<>(Map.of("indices", "zeebe-record*", "feature_states", List.of("none")));
-        ResponseEntity<String> zeebeEsBackupResponse = restTemplate.exchange(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + zeebeEsRepository + "/" + backupId, HttpMethod.PUT, zeebeEsBackupRequest, String.class);
+        ResponseEntity<String> zeebeEsBackupResponse = restTemplate.exchange(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository() + "/" + backupId, HttpMethod.PUT, zeebeEsBackupRequest, String.class);
         operationLog.info("Start Zeebe ES Backup on [" + zeebeEsRepository + "] response: " + zeebeEsBackupResponse.getStatusCode().value() + " [" + zeebeEsBackupResponse.getBody() + "]");
     }
 
@@ -88,7 +164,7 @@ public class ZeebeAccess extends WebActuator {
         ResponseEntity<ZeebeBackupStatusResponse> backupStatusResponse = null;
         do {
             logger.info("checking backup status for url {}", blueberryConfig.getZeebeActuatorUrl());
-            backupStatusResponse = restTemplate.getForEntity(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + zeebeEsRepository + "/_status?pretty", ZeebeBackupStatusResponse.class);
+            backupStatusResponse = restTemplate.getForEntity(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository() + "/_status?pretty", ZeebeBackupStatusResponse.class);
             try {
                 Thread.sleep(100L);
             } catch (InterruptedException e) {
@@ -189,6 +265,4 @@ public class ZeebeAccess extends WebActuator {
         public int replicaFactor;
         public String esRepository;
     }
-
-
 }
