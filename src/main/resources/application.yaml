@@ -5,11 +5,25 @@ blueberry:
   zeebeActuatorUrl: http://localhost:9600
   kubeConfigWindows: \\wsl$\Ubuntu\home\pym\config
   kubeConfig: \\wsl.localhost\Ubuntu\home\pym\.kube\config
+  elasticsearchurl: http://localhost:9200
 
   # THis information are temporary. They must come from the pod itself
   operateRepository: operaterepository
   tasklistRepository: tasklistrepository
   optimizeRepository : optimizerepository
+  zeebeRepository: zeeberecordrepository
+
+  storageType: "s3"  # Can be "s3" or "azure"
+  # S3 Configuration
+  s3:
+    bucket: "joeymanagementbucket"
+    basePath: "zeeberecordbackup"
+    region: "us-east-2"
+
+  azure:
+    # Azure Configuration
+    container: "zeeberecordcontainer"
+    basePath: "zeeberecordbackup"
 
   elasticsearch:
     containerType: azure
@@ -23,7 +37,6 @@ blueberry:
     containerType: AZURE
     containerName: zeebcontainer
     zeebeRecordRepository: camunda_zeebe_records_backup
-
 
 
 server:

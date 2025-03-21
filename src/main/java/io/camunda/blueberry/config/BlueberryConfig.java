@@ -32,33 +32,50 @@ public class BlueberryConfig {
     private String kubeConfig;
 
     @Value("${blueberry.elasticsearch.containerType:}")
-    private String elasticsearchContainerType;
-    @Value("${blueberry.elasticsearch.containerName:}")
     private String elasticsearchContainerName;
+
+    @Value("${blueberry.elasticsearch.containerName:}")
+    private String elasticsearchContainerType;
+
     @Value("${blueberry.elasticsearch.operateContainerBasePath:/operate}")
     private String operateContainerBasePath;
-    @Value("${blueberry.elasticsearch.tasklistContainerBasePath:/tasklist}")
-    private String tasklistContainerBasePath;
-    @Value("${blueberry.elasticsearch.optimizeContainerBasePath:/optimize}")
-    private String optimizeContainerBasePath;
-    @Value("${blueberry.elasticsearch.zeebeRecordContainerBasePath:/zeeberecord}")
-    private String zeebeRecordContainerBasePath;
-
-
-    @Value("${blueberry.zeebe.zeebeRecordRepository:camunda_zeebe_records_backup}")
-    private String zeebeRecordRepository;
 
     /**
      * These values are temporary. KubernetesAccess should get that values directly from pôds
      */
     @Value("${blueberry.operateRepository}")
     private String operateRepository;
+
     @Value("${blueberry.tasklistRepository}")
     private String tasklistRepository;
+
     @Value("${blueberry.optimizeRepository}")
     private String optimizeRepository;
 
+    @Value("${blueberry.zeebeRepository}")
+    private String zeebeRepository;
 
+    // S3 specific configuration
+    @Value("${blueberry.s3.bucket:}")
+    private String s3Bucket;
+
+    @Value("${blueberry.s3.basePath:}")
+    private String s3BasePath;
+
+    @Value("${blueberry.s3.region:}")
+    private String s3Region;
+
+    // Azure specific configuration
+    @Value("${blueberry.azure.container:}")
+    private String azureContainer;
+
+    @Value("${blueberry.azure.basePath:}")
+    private String azureBasePath;
+
+    @Value("${blueberry.storageType:}")
+    private String storageType;
+
+    // Getters for general properties
     public String getOptimizeActuatorUrl() {
         return optimizeActuatorUrl;
     }
@@ -125,5 +142,35 @@ public class BlueberryConfig {
 
     public String getOptimizeRepository() {
         return optimizeRepository;
+    }
+
+    public String getZeebeRepository() {
+        return zeebeRepository;
+    }
+
+    // Getters for S3 configuration
+    public String getS3Bucket() {
+        return s3Bucket;
+    }
+
+    public String getS3BasePath() {
+        return s3BasePath;
+    }
+
+    public String getS3Region() {
+        return s3Region;
+    }
+
+    // Getters for Azure configuration
+    public String getAzureContainer() {
+        return azureContainer;
+    }
+
+    public String getAzureBasePath() {
+        return azureBasePath;
+    }
+
+    public String getStorageType(){
+        return storageType;
     }
 }
