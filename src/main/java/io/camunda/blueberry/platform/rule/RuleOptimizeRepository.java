@@ -114,8 +114,8 @@ public class RuleOptimizeRepository implements Rule {
             if (execute && ruleInfo.inProgress()) {
 
                 operationResult = elasticSearchAccess.createRepository(optimizeRepository,
-                        blueberryConfig.getElasticsearchContainerType(),
-                        blueberryConfig.getElasticsearchContainerName(),
+                        blueberryConfig.getContainerType(),
+                        blueberryConfig.getAzureContainerName(),
                         blueberryConfig.getOptimizeContainerBasePath());
                 if (operationResult.success) {
                     ruleInfo.addDetails("Repository is created in ElasticSearch");
@@ -125,8 +125,8 @@ public class RuleOptimizeRepository implements Rule {
                     ruleInfo.setStatus(RuleStatus.FAILED);
                 }
                 ruleInfo.addVerifications("Check Elasticsearch repository [" + optimizeRepository
-                                + "] ContainerType[" + blueberryConfig.getElasticsearchContainerType()
-                                + "] ContainerName[" + blueberryConfig.getElasticsearchContainerName()
+                                + "] ContainerType[" + blueberryConfig.getContainerType()
+                                + "] ContainerName[" + blueberryConfig.getAzureContainerName()
                                 + "] basePath[" + blueberryConfig.getOperateContainerBasePath() + "]",
                         ruleInfo.getStatus(),
                         operationResult.command);

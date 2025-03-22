@@ -7,43 +7,34 @@ blueberry:
   kubeConfig: \\wsl.localhost\Ubuntu\home\pym\.kube\config
   elasticsearchurl: http://localhost:9200
 
-  # THis information are temporary. They must come from the pod itself
+  # This information are temporary. They must come from the pod itself
   operateRepository: operaterepository
   tasklistRepository: tasklistrepository
   optimizeRepository : optimizerepository
   zeebeRepository: zeeberecordrepository
 
-  storageType: "s3"  # Can be "s3" or "azure"
-  # S3 Configuration
-  s3:
-    bucket: "joeymanagementbucket"
-    basePath: "zeeberecordbackup"
-    region: "us-east-2"
 
-  azure:
-    # Azure Configuration
-    container: "zeeberecordcontainer"
-    basePath: "zeeberecordbackup"
 
+  # When repository need to be created, then a base path is used. All based path used
   elasticsearch:
-    containerType: azure
-    containerName: elasticsearchcontainer
     operateContainerBasePath: /operate
     tasklistContainerBasePath: /tasklist
     optimizeContainerBasePath: /optimize
     zeebeRecordContainerBasePath: /zeeberecord
+    # ZeebeRecord need a backup. Here is the name of the backup to be created
+    zeebeRecordRepository: camunda_zeebe_records_backup
+
+    # Define the container used by Zeebe and by ElasticSearch
+  container:
+    containerType: azure
     azure:
-      containerName: "zeeberecordcontainer"
+      containerName: "elasticsearchcontainer"
       basePath: "zeeberecordbackup"
     s3:
       bucket: "joeymanagementbucket"
       basePath: "zeeberecordbackup"
       region: "us-east-2"
 
-  zeebe:
-    containerType: azure
-    containerName: zeebcontainer
-    zeebeRecordRepository: camunda_zeebe_records_backup
 
 
 server:

@@ -105,7 +105,7 @@ public class ZeebeAccess extends WebActuator {
         ZeebeInformation zeebeInformation = getInformation();
         String zeebeEsRepository = blueberryConfig.getZeebeRecordRepository();
 
-        String storageType = blueberryConfig.getStorageType(); // Fetch storage type (e.g., "s3" or "azure")
+        String storageType = blueberryConfig.getContainerType(); // Fetch storage type (e.g., "s3" or "azure")
         String url = blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository();
 
         Map<String, Object> settings;
@@ -121,8 +121,8 @@ public class ZeebeAccess extends WebActuator {
         } else if ("azure".equalsIgnoreCase(storageType)) {
             type = "azure";
             settings = Map.of(
-                    "container", blueberryConfig.getAzureContainer(),
-                    "base_path", blueberryConfig.getAzureBasePath());
+                    "container", blueberryConfig.getAzureContainerName(),
+                    "base_path", blueberryConfig.getZeebeRecordContainerBasePath());
         } else {
             throw new IllegalArgumentException("Unsupported storage type: " + storageType);
         }

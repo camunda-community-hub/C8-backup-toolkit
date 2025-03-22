@@ -113,8 +113,8 @@ public class RuleOperateRepository implements Rule {
             if (execute && ruleInfo.inProgress()) {
 
                 operationResult = elasticSearchAccess.createRepository(operateRepository,
-                        blueberryConfig.getElasticsearchContainerType(),
-                        blueberryConfig.getElasticsearchContainerName(),
+                        blueberryConfig.getContainerType(),
+                        blueberryConfig.getAzureContainerName(),
                         blueberryConfig.getOperateContainerBasePath());
                 if (operationResult.success) {
                     ruleInfo.addDetails("Repository is created in ElasticSearch");
@@ -124,8 +124,8 @@ public class RuleOperateRepository implements Rule {
                     ruleInfo.setStatus(RuleStatus.FAILED);
                 }
                 ruleInfo.addVerifications("Check Elasticsearch repository [" + operateRepository
-                                + "] ContainerType[" + blueberryConfig.getElasticsearchContainerType()
-                                + "] ContainerName[" + blueberryConfig.getElasticsearchContainerName()
+                                + "] ContainerType[" + blueberryConfig.getContainerType()
+                                + "] ContainerName[" + blueberryConfig.getAzureContainerName()
                                 + "] basePath[" + blueberryConfig.getOperateContainerBasePath() + "]",
                         ruleInfo.getStatus(),
                         operationResult.command);

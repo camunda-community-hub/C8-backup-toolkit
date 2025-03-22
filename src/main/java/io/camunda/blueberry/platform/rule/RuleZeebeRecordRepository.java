@@ -1,7 +1,6 @@
 package io.camunda.blueberry.platform.rule;
 
 
-import io.camunda.blueberry.client.CamundaApplication;
 import io.camunda.blueberry.client.ContainerAccess;
 import io.camunda.blueberry.client.ElasticSearchAccess;
 import io.camunda.blueberry.config.BlueberryConfig;
@@ -94,8 +93,8 @@ public class RuleZeebeRecordRepository implements Rule {
             // Third step, create the repository if asked
             if (execute && ruleInfo.inProgress()) {
                 ContainerAccess.OperationResult operationResult = elasticSearchAccess.createRepository(blueberryConfig.getZeebeRecordRepository(),
-                        blueberryConfig.getElasticsearchContainerType(),
-                        blueberryConfig.getElasticsearchContainerName(),
+                        blueberryConfig.getContainerType(),
+                        blueberryConfig.getAzureContainerName(),
                         blueberryConfig.getZeebeRecordContainerBasePath());
                 if (operationResult.success) {
                     ruleInfo.addDetails("Repository is created in ElasticSearch");
@@ -105,8 +104,8 @@ public class RuleZeebeRecordRepository implements Rule {
                     ruleInfo.setStatus(RuleStatus.FAILED);
                 }
                 ruleInfo.addVerifications("Check Elasticsearch repository [" + blueberryConfig.getZeebeRecordRepository()
-                                + "] ContainerType[" + blueberryConfig.getElasticsearchContainerType()
-                                + "] ContainerName[" + blueberryConfig.getElasticsearchContainerName()
+                                + "] ContainerType[" + blueberryConfig.getContainerType()
+                                + "] ContainerName[" + blueberryConfig.getAzureContainerName()
                                 + "] basePath[" + blueberryConfig.getZeebeRecordContainerBasePath() + "]",
                         ruleInfo.getStatus(),
                         operationResult.command);

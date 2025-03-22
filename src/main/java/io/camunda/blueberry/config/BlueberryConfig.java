@@ -5,6 +5,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
 @ConfigurationProperties(value = "blueberry")
 @Component
 public class BlueberryConfig {
@@ -31,23 +35,23 @@ public class BlueberryConfig {
     @Value("${blueberry.kubeConfig:~/.kube/config}")
     private String kubeConfig;
 
-    @Value("${blueberry.elasticsearch.containerType:}")
-    private String elasticsearchContainerName;
 
-    @Value("${blueberry.elasticsearch.containerName:}")
-    private String elasticsearchContainerType;
-
+    /**
+     * Repository in Elastic search can be created to backup indexes
+     */
     @Value("${blueberry.elasticsearch.operateContainerBasePath:/operate}")
     private String operateContainerBasePath;
+
     @Value("${blueberry.elasticsearch.tasklistContainerBasePath:/tasklist}")
     private String tasklistContainerBasePath;
+
     @Value("${blueberry.elasticsearch.optimizeContainerBasePath:/optimize}")
     private String optimizeContainerBasePath;
+
     @Value("${blueberry.elasticsearch.zeebeRecordContainerBasePath:/zeeberecord}")
     private String zeebeRecordContainerBasePath;
 
-
-    @Value("${blueberry.zeebe.zeebeRecordRepository:camunda_zeebe_records_backup}")
+    @Value("${blueberry.elasticsearch.zeebeRecordRepository:camunda_zeebe_records_backup}")
     private String zeebeRecordRepository;
 
     /**
@@ -65,25 +69,24 @@ public class BlueberryConfig {
     @Value("${blueberry.zeebeRepository}")
     private String zeebeRepository;
 
+
+    // Containers
+    @Value("${blueberry.container.containerType:}")
+    private String containerType;
+
+    @Value("${blueberry.container.azure.containerName:}")
+    private String azureContainerName;
+
     // S3 specific configuration
-    @Value("${blueberry.s3.bucket:}")
+    @Value("${blueberry.container.s3.bucket:}")
     private String s3Bucket;
 
-    @Value("${blueberry.s3.basePath:}")
+    @Value("${blueberry.container.s3.basePath:}")
     private String s3BasePath;
 
-    @Value("${blueberry.s3.region:}")
+    @Value("${blueberry.container.s3.region:}")
     private String s3Region;
 
-    // Azure specific configuration
-    @Value("${blueberry.azure.container:}")
-    private String azureContainer;
-
-    @Value("${blueberry.azure.basePath:}")
-    private String azureBasePath;
-
-    @Value("${blueberry.storageType:}")
-    private String storageType;
 
     // Getters for general properties
     public String getOptimizeActuatorUrl() {
@@ -110,12 +113,12 @@ public class BlueberryConfig {
         return namespace;
     }
 
-    public String getElasticsearchContainerName() {
-        return elasticsearchContainerName;
+    public String getAzureContainerName() {
+        return azureContainerName;
     }
 
-    public String getElasticsearchContainerType() {
-        return elasticsearchContainerType;
+    public String getContainerType() {
+        return containerType;
     }
 
     public String getOperateContainerBasePath() {
@@ -171,16 +174,24 @@ public class BlueberryConfig {
         return s3Region;
     }
 
-    // Getters for Azure configuration
-    public String getAzureContainer() {
-        return azureContainer;
-    }
 
-    public String getAzureBasePath() {
-        return azureBasePath;
-    }
 
-    public String getStorageType(){
-        return storageType;
+
+    /**
+     * Access all configuration variables and return it dynamically.
+     *
+     * @return map of all variables, value
+     */
+    public Map<String, Object> getAll() {
+        Map<String, Object> values = new HashMap<>();
+        for (Field field : this.getClass().getDeclaredFields()) {
+            field.setAccessible(true);
+            try {
+                values.put(field.getName(), field.get(this));
+            } catch (IllegalAccessException e) {
+                values.put(field.getName(), "ACCESS_DENIED");
+            }
+        }
+        return values;
     }
 }
