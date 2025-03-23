@@ -26,12 +26,4 @@ The restore is complex, because it's not only based on REST API. Zeebe has a spe
 Check the [Restoration procedure](doc/restore/README.md)
 
 # Todo
-Dashboard:
-  Zeebe status (pause/active)
-  Number of backup
-  Backup in progress?
-  Configuration Ok?
-
-Backup:
-    Failed during execution, Zeebe is resume?
-    
+Check the [Todo.md](Todo.md) file
