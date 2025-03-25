@@ -1,4 +1,4 @@
-package io.camunda.blueberry.client;
+package io.camunda.blueberry.access;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Image;

@@ -32,7 +32,7 @@ public class BlueberryConfig {
     private String namespace;
 
 
-    @Value("${blueberry.kubeConfig:~/.kube/config}")
+    @Value("${blueberry.kubeConfig:}")
     private String kubeConfig;
 
 
@@ -142,7 +142,7 @@ public class BlueberryConfig {
     }
 
     public String getKubeConfig() {
-        return kubeConfig;
+        return kubeConfig==null|| kubeConfig.trim().isEmpty()?null: kubeConfig;
     }
 
     public String getOperateRepository() {

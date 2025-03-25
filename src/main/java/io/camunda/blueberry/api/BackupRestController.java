@@ -1,7 +1,7 @@
 package io.camunda.blueberry.api;
 
-import io.camunda.blueberry.client.BackupInfo;
-import io.camunda.blueberry.client.ZeebeAccess;
+import io.camunda.blueberry.access.BackupInfo;
+import io.camunda.blueberry.access.ZeebeAccess;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.backup.BackupJob;
 import io.camunda.blueberry.operation.backup.BackupManager;

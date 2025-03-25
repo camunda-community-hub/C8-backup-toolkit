@@ -1,4 +1,4 @@
-package io.camunda.blueberry.client.toolbox;
+package io.camunda.blueberry.access.toolbox;
 
 public class KubenetesToolbox {
 

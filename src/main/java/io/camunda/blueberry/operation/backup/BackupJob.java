@@ -1,6 +1,6 @@
 package io.camunda.blueberry.operation.backup;
 
-import io.camunda.blueberry.client.*;
+import io.camunda.blueberry.access.*;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
 

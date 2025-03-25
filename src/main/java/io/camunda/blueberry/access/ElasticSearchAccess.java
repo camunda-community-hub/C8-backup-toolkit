@@ -1,6 +1,8 @@
-package io.camunda.blueberry.client;
+package io.camunda.blueberry.access;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.camunda.blueberry.access.container.Container;
+import io.camunda.blueberry.access.container.ContainerFactory;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.ElasticsearchException;
 import org.springframework.http.*;
@@ -9,12 +11,16 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
-public class ElasticSearchAccess extends ContainerAccess {
+public class ElasticSearchAccess {
+
 
     BlueberryConfig blueberryConfig;
 
-    public ElasticSearchAccess(BlueberryConfig blueberryConfig) {
+    ContainerFactory containerFactory;
+
+    public ElasticSearchAccess(BlueberryConfig blueberryConfig, ContainerFactory containerFactory) {
         this.blueberryConfig = blueberryConfig;
+        this.containerFactory = containerFactory;
     }
 
     public OperationResult connection() {
@@ -26,8 +32,8 @@ public class ElasticSearchAccess extends ContainerAccess {
     public OperationResult existRepository(String repositoryName) {
         RestTemplate restTemplate = new RestTemplate();
         OperationResult operationResult = new OperationResult();
-        String url =  blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + repositoryName;
-        operationResult.command = "PUT "+url;
+        String url = blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + repositoryName;
+        operationResult.command = "PUT " + url;
 
         try {
             // ResponseEntity<String> response = restTemplate.getForEntity(operationResult.command, String.class);
@@ -72,26 +78,23 @@ public class ElasticSearchAccess extends ContainerAccess {
      *
      * @param repositoryName
      * @param containerType           azure, S3...
-     * @param containerName           name of the container to use, where the repository will be saved
      * @param basePathInsideContainer inside the container, the path
      * @throws ElasticsearchException exception in case of error
      */
     public OperationResult createRepository(String repositoryName,
                                             String containerType,
-                                            String containerName,
                                             String basePathInsideContainer) {
         RestTemplate restTemplate = new RestTemplate();
         OperationResult operationResult = new OperationResult();
-        String jsonPayload = String.format("""
-                {
-                  "type": "%s",
-                  "settings": {
-                    "container": "%s",
-                    "base_path": "%s"
-                  }
-                }
-                """, containerType, containerName, basePathInsideContainer);
         operationResult.command = blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + repositoryName;
+        Container container = containerFactory.getContainerFromType(containerType);
+        if (container == null) {
+            operationResult.success = false;
+            operationResult.details = "Can't find container [" + containerType + "]";
+            return operationResult;
+        }
+
+        String jsonPayload = container.getElasticsearchPayload(basePathInsideContainer);
 
         try {
             HttpHeaders headers = new HttpHeaders();
@@ -107,7 +110,7 @@ public class ElasticSearchAccess extends ContainerAccess {
                 operationResult.success = false;
                 operationResult.details = "Can't create repository : code["
                         + response.getStatusCode().value() + " RepositoryName[" + repositoryName
-                        + "] using container name[" + containerName
+                        + "] using container information[" + container.getInformation()
                         + "] Type[" + containerType + "] path[" + basePathInsideContainer + "] " + response.getBody();
                 return operationResult;
             }
@@ -118,7 +121,7 @@ public class ElasticSearchAccess extends ContainerAccess {
         } catch (Exception e) {
             operationResult.success = false;
             operationResult.details = "Can't create repository : RepositoryName[" + repositoryName
-                    + "] using container name[" + containerName
+                    + "] using container name[" + container.getInformation()
                     + "] Type[" + containerType + "] path[" + basePathInsideContainer + "] : "
                     + e.getMessage();
             return operationResult;

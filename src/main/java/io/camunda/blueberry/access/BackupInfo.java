@@ -1,4 +1,4 @@
-package io.camunda.blueberry.client;
+package io.camunda.blueberry.access;
 
 import io.camunda.zeebe.protocol.management.BackupStatusCode;
 

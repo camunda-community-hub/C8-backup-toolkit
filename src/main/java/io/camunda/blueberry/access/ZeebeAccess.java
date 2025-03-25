@@ -1,8 +1,8 @@
-package io.camunda.blueberry.client;
+package io.camunda.blueberry.access;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.camunda.blueberry.client.toolbox.WebActuator;
+import io.camunda.blueberry.access.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.OperationLog;

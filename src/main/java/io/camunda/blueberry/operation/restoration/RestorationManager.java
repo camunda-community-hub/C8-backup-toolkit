@@ -1,6 +1,6 @@
 package io.camunda.blueberry.operation.restoration;
 
-import io.camunda.blueberry.client.ZeebeAccess;
+import io.camunda.blueberry.access.ZeebeAccess;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

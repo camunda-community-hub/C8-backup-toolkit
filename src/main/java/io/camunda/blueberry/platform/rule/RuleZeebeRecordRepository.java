@@ -1,8 +1,8 @@
 package io.camunda.blueberry.platform.rule;
 
 
-import io.camunda.blueberry.client.ContainerAccess;
-import io.camunda.blueberry.client.ElasticSearchAccess;
+import io.camunda.blueberry.access.ElasticSearchAccess;
+import io.camunda.blueberry.access.OperationResult;
 import io.camunda.blueberry.config.BlueberryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -69,7 +69,7 @@ public class RuleZeebeRecordRepository implements Rule {
             //------------ Second step, verify if the repository exist in elasticSearch
             if (ruleInfo.inProgress()) {
                 // now check if the repository exist in Elastic search
-                ContainerAccess.OperationResult operationResult = elasticSearchAccess.existRepository(blueberryConfig.getZeebeRecordRepository());
+                OperationResult operationResult = elasticSearchAccess.existRepository(blueberryConfig.getZeebeRecordRepository());
                 accessElasticsearchRepository = operationResult.resultBoolean;
                 ruleInfo.addVerifications("Check Elasticsearch repository [" + blueberryConfig.getZeebeRecordRepository() + "] :"
                                 + operationResult.details,
@@ -92,9 +92,8 @@ public class RuleZeebeRecordRepository implements Rule {
 
             // Third step, create the repository if asked
             if (execute && ruleInfo.inProgress()) {
-                ContainerAccess.OperationResult operationResult = elasticSearchAccess.createRepository(blueberryConfig.getZeebeRecordRepository(),
+                OperationResult operationResult = elasticSearchAccess.createRepository(blueberryConfig.getZeebeRecordRepository(),
                         blueberryConfig.getContainerType(),
-                        blueberryConfig.getAzureContainerName(),
                         blueberryConfig.getZeebeRecordContainerBasePath());
                 if (operationResult.success) {
                     ruleInfo.addDetails("Repository is created in ElasticSearch");

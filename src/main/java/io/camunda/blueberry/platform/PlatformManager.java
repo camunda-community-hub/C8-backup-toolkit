@@ -1,7 +1,7 @@
 package io.camunda.blueberry.platform;
 
 import io.camunda.blueberry.platform.rule.Rule;
-import io.camunda.blueberry.client.KubernetesAccess;
+import io.camunda.blueberry.access.KubernetesAccess;
 import io.camunda.blueberry.exception.OperationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

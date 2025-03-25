@@ -1,10 +1,7 @@
 package io.camunda.blueberry.platform.rule;
 
 
-import io.camunda.blueberry.client.CamundaApplication;
-import io.camunda.blueberry.client.ContainerAccess;
-import io.camunda.blueberry.client.ElasticSearchAccess;
-import io.camunda.blueberry.client.KubernetesAccess;
+import io.camunda.blueberry.access.*;
 import io.camunda.blueberry.config.BlueberryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -73,7 +70,7 @@ public class RuleOptimizeRepository implements Rule {
             // the rule is in progress
             ruleInfo.setStatus(RuleStatus.INPROGRESS);
             String optimizeRepository = null;
-            ContainerAccess.OperationResult operationResult = kubernetesAccess.getRepositoryName(CamundaApplication.COMPONENT.OPTIMIZE, blueberryConfig.getNamespace());
+            OperationResult operationResult = kubernetesAccess.getRepositoryName(CamundaApplication.COMPONENT.OPTIMIZE, blueberryConfig.getNamespace());
             if (!operationResult.success) {
                 ruleInfo.addDetails("Can't access the Repository name in the pod, or does not exist");
                 ruleInfo.addDetails(operationResult.details);
@@ -115,7 +112,6 @@ public class RuleOptimizeRepository implements Rule {
 
                 operationResult = elasticSearchAccess.createRepository(optimizeRepository,
                         blueberryConfig.getContainerType(),
-                        blueberryConfig.getAzureContainerName(),
                         blueberryConfig.getOptimizeContainerBasePath());
                 if (operationResult.success) {
                     ruleInfo.addDetails("Repository is created in ElasticSearch");
@@ -125,9 +121,9 @@ public class RuleOptimizeRepository implements Rule {
                     ruleInfo.setStatus(RuleStatus.FAILED);
                 }
                 ruleInfo.addVerifications("Check Elasticsearch repository [" + optimizeRepository
-                                + "] ContainerType[" + blueberryConfig.getContainerType()
-                                + "] ContainerName[" + blueberryConfig.getAzureContainerName()
-                                + "] basePath[" + blueberryConfig.getOperateContainerBasePath() + "]",
+
+                                + "] basePath[" + blueberryConfig.getOperateContainerBasePath()
+                                + "] "+operationResult.details,
                         ruleInfo.getStatus(),
                         operationResult.command);
 

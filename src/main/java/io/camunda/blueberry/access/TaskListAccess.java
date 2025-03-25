@@ -1,7 +1,7 @@
-package io.camunda.blueberry.client;
+package io.camunda.blueberry.access;
 
-import io.camunda.blueberry.client.toolbox.KubenetesToolbox;
-import io.camunda.blueberry.client.toolbox.WebActuator;
+import io.camunda.blueberry.access.toolbox.KubenetesToolbox;
+import io.camunda.blueberry.access.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
