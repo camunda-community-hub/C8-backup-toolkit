@@ -78,10 +78,6 @@ public class BackupJob {
         operationLog.operationStep("Pause Zeebe");
         zeebeAccess.pauseExporting(operationLog);
 
-        // create Zeebe repository
-        operationLog.operationStep("Check Zeebe snapshot Repository Exists");
-        zeebeAccess.ensureZeebeSnapshotExists(operationLog);
-
         // backup Zeebe record
         operationLog.operationStep("Backup Zeebe Elasticsearch");
         zeebeAccess.esBackup(backupId, operationLog);
