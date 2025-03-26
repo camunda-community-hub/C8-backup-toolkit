@@ -16,6 +16,7 @@ import java.util.List;
  */
 @Component
 public class BackupManager {
+    private final ElasticSearchAccess elasticSearchAccess;
     Logger logger = LoggerFactory.getLogger(BackupManager.class);
     final OperateAccess operateAccess;
     final TaskListAccess taskListAccess;
@@ -23,11 +24,12 @@ public class BackupManager {
     final ZeebeAccess zeebeAccess;
     private BackupJob backupJob;
 
-    public BackupManager(OperateAccess operateAccess, TaskListAccess taskListAccess, OptimizeAccess optimizeAccess, ZeebeAccess zeebeAccess) {
+    public BackupManager(OperateAccess operateAccess, TaskListAccess taskListAccess, OptimizeAccess optimizeAccess, ZeebeAccess zeebeAccess, ElasticSearchAccess elasticSearchAccess) {
         this.operateAccess = operateAccess;
         this.taskListAccess = taskListAccess;
         this.optimizeAccess = optimizeAccess;
         this.zeebeAccess = zeebeAccess;
+        this.elasticSearchAccess = elasticSearchAccess;
     }
 
     public synchronized void startBackup(BackupParameter backupParameter) throws OperationException {
@@ -35,7 +37,7 @@ public class BackupManager {
         if (backupJob != null && backupJob.getJobStatus() == BackupJob.JOBSTATUS.INPROGRESS)
             throw new BackupException(null, 400, "Job Already in progress", "In Progress[" + backupJob.getBackupId() + "]", backupJob.getBackupId());
         // start a backup, asynchrously
-        backupJob = new BackupJob(operateAccess, taskListAccess, optimizeAccess, zeebeAccess, new OperationLog());
+        backupJob = new BackupJob(operateAccess, taskListAccess, optimizeAccess, zeebeAccess, elasticSearchAccess, new OperationLog());
         Long backupId = backupParameter.backupId;
         if (backupParameter.nextId) {
             logger.info("No backup is provided, calculate the new Id");

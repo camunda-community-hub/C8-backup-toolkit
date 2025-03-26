@@ -9,7 +9,9 @@ package io.camunda;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * This Application is moved to io.camunda in order to detect all io.camunda.connector and
@@ -19,6 +21,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ConfigurationPropertiesScan("io.camunda")
 @EnableScheduling
 public class BlueberryApplication {
+
+    @Bean
+    public RestTemplate getRestTemplate() {
+        return new RestTemplate();
+    }
 
     public static void main(String[] args) {
 

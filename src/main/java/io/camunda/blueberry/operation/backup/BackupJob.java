@@ -15,16 +15,19 @@ public class BackupJob {
     private final TaskListAccess taskListAccess;
     private final OptimizeAccess optimizeAccess;
     private final ZeebeAccess zeebeAccess;
+    private final ElasticSearchAccess elasticSearchAccess;
+
     OperationLog operationLog;
     private JOBSTATUS jobStatus = JOBSTATUS.PLANNED;
     private long backupId;
 
     protected BackupJob(OperateAccess operateAccess, TaskListAccess taskListAccess, OptimizeAccess optimizeAccess,
-                        ZeebeAccess zeebeAccess, OperationLog operationLog) {
+                        ZeebeAccess zeebeAccess, ElasticSearchAccess elasticSearchAccess, OperationLog operationLog) {
         this.operateAccess = operateAccess;
         this.taskListAccess = taskListAccess;
         this.optimizeAccess = optimizeAccess;
         this.zeebeAccess = zeebeAccess;
+        this.elasticSearchAccess = elasticSearchAccess;
         this.operationLog = operationLog;
     }
 
@@ -80,13 +83,12 @@ public class BackupJob {
 
         // backup Zeebe record
         operationLog.operationStep("Backup Zeebe Elasticsearch");
-        zeebeAccess.esBackup(backupId, operationLog);
-//        zeebeAccess.monitorEsBackup(backupId, operationLog);
+        elasticSearchAccess.esBackup(backupId, operationLog);
 
         // backup Zeebe
         operationLog.operationStep("Backup Zeebe");
         zeebeAccess.backup(backupId, operationLog);
-//        zeebeAccess.monitorBackup(backupId, operationLog);
+        zeebeAccess.monitorBackup(backupId, operationLog);
 
         // Finish? Then stop all restoration pod
         operationLog.operationStep("Resume Zeebe");
