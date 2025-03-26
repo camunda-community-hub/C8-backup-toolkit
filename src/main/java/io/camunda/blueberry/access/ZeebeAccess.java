@@ -10,8 +10,6 @@ import io.camunda.zeebe.protocol.impl.encoding.BackupStatusResponse;
 import io.camunda.zeebe.protocol.management.BackupStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -30,6 +28,7 @@ public class ZeebeAccess extends WebActuator {
     Logger logger = LoggerFactory.getLogger(ZeebeAccess.class);
     private final BlueberryConfig blueberryConfig;
     private final RestTemplate restTemplate;
+    private ZeebeAccess zeebeAccess;
 
     public ZeebeAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper) {
         super(restTemplate);
@@ -61,55 +60,6 @@ public class ZeebeAccess extends WebActuator {
 
     /* ******************************************************************** */
     /*                                                                      */
-    /*  Elastic search section                                              */
-    /*                                                                      */
-    /* ******************************************************************** */
-
-    /**
-     * curl -X PUT http://localhost:9200/_snapshot/zeeberecordrepository/12 -H 'Content-Type: application/json'   \
-     * -d '{ "indices": "zeebe-record*", "feature_states": ["none"]}'
-     *
-     * @param backupId
-     * @param operationLog
-     */
-    public void esBackup(Long backupId, OperationLog operationLog) {
-        ZeebeInformation zeebeInformation = getInformation();
-        String zeebeEsRepository = blueberryConfig.getZeebeRecordRepository();
-
-        HttpEntity<?> zeebeEsBackupRequest = new HttpEntity<>(Map.of("indices", "zeebe-record*", "feature_states", List.of("none")));
-        ResponseEntity<String> zeebeEsBackupResponse = restTemplate.exchange(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository() + "/" + backupId, HttpMethod.PUT, zeebeEsBackupRequest, String.class);
-        operationLog.info("Start Zeebe ES Backup on [" + zeebeEsRepository + "] response: " + zeebeEsBackupResponse.getStatusCode().value() + " [" + zeebeEsBackupResponse.getBody() + "]");
-    }
-
-    /**
-     * Monitor and wait for the end of the backup
-     * @param backupId backupId to monitor and wait
-     * @param operationLog report status
-     */
-    public void monitorEsBackup(Long backupId, OperationLog operationLog) {
-        ZeebeInformation zeebeInformation = getInformation();
-        String zeebeEsRepository = blueberryConfig.getZeebeRecordRepository();
-
-        ResponseEntity<ZeebeBackupStatusResponse> backupStatusResponse = null;
-        do {
-            logger.info("checking backup status for url {}", blueberryConfig.getZeebeActuatorUrl());
-            backupStatusResponse = restTemplate.getForEntity(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository() + "/_status?pretty", ZeebeBackupStatusResponse.class);
-            try {
-                Thread.sleep(100L);
-            } catch (InterruptedException e) {
-                // Do nothing
-            }
-            logger.info("backup status response for url {}: {}, {}", blueberryConfig.getElasticsearchUrl(), backupStatusResponse.getStatusCodeValue(), backupStatusResponse.getBody());
-
-        } while (backupStatusResponse.getStatusCode().is2xxSuccessful() &&
-                backupStatusResponse.getBody() != null && !backupStatusResponse.getBody().getSnapshots().get(0).getState().equals("SUCCESS")
-
-        );
-    }
-
-
-    /* ******************************************************************** */
-    /*                                                                      */
     /*  Backup section                                                      */
     /*                                                                      */
     /* ******************************************************************** */
@@ -117,29 +67,52 @@ public class ZeebeAccess extends WebActuator {
     public void backup(Long backupId, OperationLog operationLog) {
         Map<String, Object> backupBody = Map.of("backupId", backupId);
         ResponseEntity<String> backupResponse = restTemplate.postForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups", backupBody, String.class);
-        logger.info("backup status response for url {}: {}, {}", blueberryConfig.getZeebeActuatorUrl(), backupResponse.getStatusCodeValue(), backupResponse.getBody());
 
+        logger.info("Backup status response for url {}: {}, {}", blueberryConfig.getZeebeActuatorUrl(), backupResponse.getStatusCodeValue(), backupResponse.getBody());
+
+        if (backupResponse.getStatusCode().is2xxSuccessful()) {
+            // Backup request was successfully scheduled
+            logger.info("Backup {} successfully scheduled.", backupId);
+        } else {
+            // For any non-2xx status, log the error and resume exporting
+            logger.error("Backup {} failed with status {}: {}", backupId, backupResponse.getStatusCode(), backupResponse.getBody());
+            zeebeAccess.resumeExporting(operationLog);
+        }
     }
 
     public void monitorBackup(Long backupId, OperationLog operationLog) {
-        boolean written = false;
-        ResponseEntity<BackupStatusResponse> backupStatusResponse = null;
-        do {
-            logger.info("checking backup status for url {}", blueberryConfig.getZeebeActuatorUrl());
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        while (true) {
+            logger.info("Checking backup status for URL {}", blueberryConfig.getZeebeActuatorUrl());
             try {
                 Thread.sleep(10_000L);
             } catch (InterruptedException e) {
-                // Do nothing
-            }
-            backupStatusResponse = restTemplate.getForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups/" + backupId, BackupStatusResponse.class);
-            logger.info("backup status response for url {}: {}, {}", blueberryConfig.getZeebeActuatorUrl(), backupStatusResponse.getStatusCodeValue(), backupStatusResponse.getBody());
-
-            if (!written) {
-                // operationLog.addSnapshotName("zeebe",backupStatusResponse.getBody());
-                written = true; //only write once (this can surely be done better :-))
+                Thread.currentThread().interrupt();
+                logger.warn("Thread interrupted while waiting", e);
+                return;
             }
 
-        } while (backupStatusResponse.getStatusCode().is2xxSuccessful() && backupStatusResponse.getBody() != null /* && !backupStatusResponse.getBody().getState().equals("COMPLETED")*/);
+            ResponseEntity<String> response = restTemplate.getForEntity(
+                    blueberryConfig.getZeebeActuatorUrl() + "/actuator/backups/" + backupId, String.class);
+
+            logger.info("Backup status response for URL {}: {}, {}",
+                    blueberryConfig.getZeebeActuatorUrl(), response.getStatusCodeValue(), response.getBody());
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                try {
+                    JsonNode root = objectMapper.readTree(response.getBody());
+                    String state = root.path("state").asText();
+
+                    if ("COMPLETED".equalsIgnoreCase(state)) {
+                        logger.info("Backup {} is completed. Exiting loop.", backupId);
+                        break;
+                    }
+                } catch (Exception e) {
+                    logger.error("Failed to parse backup status response", e);
+                }
+            }
+        }
     }
 
     public ZeebeInformation getInformation() {

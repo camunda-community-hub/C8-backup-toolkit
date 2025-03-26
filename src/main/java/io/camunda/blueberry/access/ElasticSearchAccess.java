@@ -5,18 +5,29 @@ import io.camunda.blueberry.access.container.Container;
 import io.camunda.blueberry.access.container.ContainerFactory;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.ElasticsearchException;
+import io.camunda.blueberry.operation.OperationLog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.List;
+import java.util.Map;
+
 @Component
 public class ElasticSearchAccess {
-
+    Logger logger = LoggerFactory.getLogger(ElasticSearchAccess.class);
 
     BlueberryConfig blueberryConfig;
 
     ContainerFactory containerFactory;
+
+    @Autowired
+    private RestTemplate restTemplate; // Injected instance
+    private ZeebeAccess zeebeAccess;
 
     public ElasticSearchAccess(BlueberryConfig blueberryConfig, ContainerFactory containerFactory) {
         this.blueberryConfig = blueberryConfig;
@@ -30,7 +41,6 @@ public class ElasticSearchAccess {
     }
 
     public OperationResult existRepository(String repositoryName) {
-        RestTemplate restTemplate = new RestTemplate();
         OperationResult operationResult = new OperationResult();
         String url = blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + repositoryName;
         operationResult.command = "PUT " + url;
@@ -84,7 +94,6 @@ public class ElasticSearchAccess {
     public OperationResult createRepository(String repositoryName,
                                             String containerType,
                                             String basePathInsideContainer) {
-        RestTemplate restTemplate = new RestTemplate();
         OperationResult operationResult = new OperationResult();
         operationResult.command = blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + repositoryName;
         Container container = containerFactory.getContainerFromType(containerType);
@@ -127,5 +136,19 @@ public class ElasticSearchAccess {
             return operationResult;
         }
 
+    }
+    /**
+     * curl -X PUT http://localhost:9200/_snapshot/zeeberecordrepository/12 -H 'Content-Type: application/json'   \
+     * -d '{ "indices": "zeebe-record*", "feature_states": ["none"]}'
+     *
+     * @param backupId
+     * @param operationLog
+     */
+    public void esBackup(Long backupId, OperationLog operationLog) {
+        String zeebeEsRepository = blueberryConfig.getZeebeRecordRepository();
+
+        HttpEntity<?> zeebeEsBackupRequest = new HttpEntity<>(Map.of("indices", "zeebe-record*", "feature_states", List.of("none")));
+        ResponseEntity<String> zeebeEsBackupResponse = restTemplate.exchange(blueberryConfig.getElasticsearchUrl() + "/_snapshot/" + blueberryConfig.getZeebeRepository() + "/" + backupId, HttpMethod.PUT, zeebeEsBackupRequest, String.class);
+        operationLog.info("Start Zeebe ES Backup on [" + zeebeEsRepository + "] response: " + zeebeEsBackupResponse.getStatusCode().value() + " [" + zeebeEsBackupResponse.getBody() + "]");
     }
 }
