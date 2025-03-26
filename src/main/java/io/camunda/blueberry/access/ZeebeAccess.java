@@ -6,6 +6,8 @@ import io.camunda.blueberry.access.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.OperationLog;
+import io.camunda.zeebe.client.ZeebeClient;
+import io.camunda.zeebe.client.api.response.Topology;
 import io.camunda.zeebe.protocol.impl.encoding.BackupStatusResponse;
 import io.camunda.zeebe.protocol.management.BackupStatusCode;
 import org.slf4j.Logger;
@@ -27,21 +29,41 @@ import java.util.stream.StreamSupport;
 @Component
 public class ZeebeAccess extends WebActuator {
     private final ObjectMapper objectMapper;
+    private final ZeebeClient zeebeClient;
     Logger logger = LoggerFactory.getLogger(ZeebeAccess.class);
     private final BlueberryConfig blueberryConfig;
     private final RestTemplate restTemplate;
 
-    public ZeebeAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper) {
+    public ZeebeAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper, ZeebeClient zeebeClient) {
         super(restTemplate);
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
+        this.zeebeClient = zeebeClient;
     }
 
     public void connection() {
 
     }
 
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  getInformation                                                      */
+    /*                                                                      */
+    /* ******************************************************************** */
+    public class ClusterInformation{
+        public int clusterSize;
+        public int partitionsCount;
+        public int replicationFactor;
+    }
+    public ClusterInformation getClusterInformation() {
+        final Topology topology = zeebeClient.newTopologyRequest().send().join();
+        ClusterInformation clusterInformation = new ClusterInformation();
+        clusterInformation.clusterSize= topology.getClusterSize();
+        clusterInformation.partitionsCount= topology.getPartitionsCount();
+        clusterInformation.replicationFactor= topology.getReplicationFactor();
+        return clusterInformation;
+    }
 
     /* ******************************************************************** */
     /*                                                                      */
@@ -59,6 +81,30 @@ public class ZeebeAccess extends WebActuator {
         operationLog.info("Resume Zeebe exporting");
     }
 
+    /**
+     * Get the exporter status
+     * @return true: all exporter are ENABLED. False: one is disabled. null: impossible to say (list is empty)
+     * @throws OperationException
+     */
+    public Boolean getExporterStatus() throws OperationException {
+        try {
+            ResponseEntity<JsonNode> listExporters = restTemplate.getForEntity(blueberryConfig.getZeebeActuatorUrl() + "/actuator/exporters", JsonNode.class);
+
+            JsonNode listExportersNode = listExporters.getBody();
+            if (listExportersNode != null && listExportersNode.isArray()) {
+                boolean isRunning = true;
+                for (JsonNode exporter : listExportersNode) {
+                    String status = exporter.path("status").asText();
+                    if ("DISABLED".equals(status))
+                        isRunning = false;
+                }
+                return isRunning;
+            }
+            return null;
+        } catch (Exception e) {
+            throw OperationException.getInstanceFromException(OperationException.BLUEBERRYERRORCODE.STATUS_EXPORTER, e);
+        }
+    }
     /* ******************************************************************** */
     /*                                                                      */
     /*  Elastic search section                                              */

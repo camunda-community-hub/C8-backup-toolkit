@@ -11,7 +11,7 @@ Objective: March 28
 | Structure the code                          | Joey   |             |
 | Create a docker image and a Kubernetes file | Py     | In progress |
 | Test on S3 bucket                           | Py     |             |
-| Test on Azure container                     | Py     |             |
+| Test on Azure container                     | Py     | Done        |
 | Documentation                               | Py     |             |  
 
 
@@ -19,7 +19,7 @@ Objective: March 28
 This version contains:
 
 ## Dashboard
-The dashboard, with these informations
+The dashboard, with these information
   * Zeebe status (pause/active)
   * Number of backup
   * Backup in progress?
