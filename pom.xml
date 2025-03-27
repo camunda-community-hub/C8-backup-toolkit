@@ -7,7 +7,7 @@
     <!-- 3.4.0 Multi tenant access -->
     <groupId>io.camunda.community</groupId>
     <artifactId>c8-backup-toolkit</artifactId>
-    <version>3.4.0</version>
+    <version>1.0.0</version>
 
     <properties>
         <java.version>21</java.version>
