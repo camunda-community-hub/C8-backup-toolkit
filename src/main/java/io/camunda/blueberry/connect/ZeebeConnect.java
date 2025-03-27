@@ -1,15 +1,14 @@
-package io.camunda.blueberry.access;
+package io.camunda.blueberry.connect;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.camunda.blueberry.access.toolbox.WebActuator;
+import io.camunda.blueberry.connect.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.OperationLog;
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.response.Topology;
 import io.camunda.zeebe.protocol.impl.encoding.BackupStatusResponse;
-import io.camunda.zeebe.protocol.management.BackupStatusCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -25,15 +24,15 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 
 @Component
-public class ZeebeAccess extends WebActuator {
+public class ZeebeConnect extends WebActuator {
     private final ObjectMapper objectMapper;
     private final ZeebeClient zeebeClient;
-    Logger logger = LoggerFactory.getLogger(ZeebeAccess.class);
+    Logger logger = LoggerFactory.getLogger(ZeebeConnect.class);
     private final BlueberryConfig blueberryConfig;
     private final RestTemplate restTemplate;
-    private ZeebeAccess zeebeAccess;
+    private ZeebeConnect zeebeConnect;
 
-    public ZeebeAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper, ZeebeClient zeebeClient) {
+    public ZeebeConnect(BlueberryConfig blueberryConfig, RestTemplate restTemplate, ObjectMapper objectMapper, ZeebeClient zeebeClient) {
         super(restTemplate);
         this.blueberryConfig = blueberryConfig;
         this.restTemplate = restTemplate;
@@ -122,7 +121,7 @@ public class ZeebeAccess extends WebActuator {
         } else {
             // For any non-2xx status, log the error and resume exporting
             logger.error("Backup {} failed with status {}: {}", backupId, backupResponse.getStatusCode(), backupResponse.getBody());
-            zeebeAccess.resumeExporting(operationLog);
+            zeebeConnect.resumeExporting(operationLog);
         }
     }
 
@@ -187,7 +186,7 @@ public class ZeebeAccess extends WebActuator {
                     .map(t -> {
                         BackupInfo backupInfo = new BackupInfo();
                         backupInfo.backupId = t.get("backupId").asInt();
-                        backupInfo.status = BackupInfo.fromZeebeStatus(BackupStatusCode.valueOf(t.get("state").asText()));
+                        backupInfo.status = BackupInfo.fromZeebeStatus(t.get("state").asText());
                         // search the date in the first partition
                         JsonNode[] details = objectMapper.convertValue(t.get("details"), JsonNode[].class);
 

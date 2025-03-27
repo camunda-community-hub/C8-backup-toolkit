@@ -1,7 +1,7 @@
-package io.camunda.blueberry.access;
+package io.camunda.blueberry.connect;
 
-import io.camunda.blueberry.access.toolbox.KubenetesToolbox;
-import io.camunda.blueberry.access.toolbox.WebActuator;
+import io.camunda.blueberry.connect.toolbox.KubenetesToolbox;
+import io.camunda.blueberry.connect.toolbox.WebActuator;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
@@ -13,16 +13,16 @@ import java.util.List;
 
 @Component
 /**
- * Manage communication to OperateAccess
+ * Manage communication to OperateConnect
  */
-public class OperateAccess implements CamundaApplication {
+public class OperateConnect implements CamundaApplication {
 
 
     private final BlueberryConfig blueberryConfig;
     private final WebActuator webActuator;
     private final KubenetesToolbox kubenetesToolbox;
 
-    public OperateAccess(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
+    public OperateConnect(BlueberryConfig blueberryConfig, RestTemplate restTemplate) {
         webActuator = new WebActuator(restTemplate);
         kubenetesToolbox = new KubenetesToolbox();
         this.blueberryConfig = blueberryConfig;

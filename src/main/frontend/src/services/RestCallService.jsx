@@ -62,7 +62,6 @@ class RestCallService {
 
   // PostJson
   postJson(uri, param, objToCall, fctToCallback) {
-    debugger;
     let headers = {'Content-Type': 'application/json'};
     param.timezoneoffset = (new Date()).getTimezoneOffset();
     console.log("RestCallService.postJson: timezoneoffset=" + param.timezoneoffset);

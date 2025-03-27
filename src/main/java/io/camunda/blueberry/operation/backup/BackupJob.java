@@ -1,6 +1,6 @@
 package io.camunda.blueberry.operation.backup;
 
-import io.camunda.blueberry.access.*;
+import io.camunda.blueberry.connect.*;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.operation.OperationLog;
 
@@ -11,23 +11,23 @@ import java.util.List;
  */
 public class BackupJob {
 
-    private final OperateAccess operateAccess;
-    private final TaskListAccess taskListAccess;
-    private final OptimizeAccess optimizeAccess;
-    private final ZeebeAccess zeebeAccess;
-    private final ElasticSearchAccess elasticSearchAccess;
+    private final OperateConnect operateConnect;
+    private final TaskListConnect taskListConnect;
+    private final OptimizeConnect optimizeConnect;
+    private final ZeebeConnect zeebeConnect;
+    private final ElasticSearchConnect elasticSearchConnect;
 
-    OperationLog operationLog;
+    private OperationLog operationLog;
     private JOBSTATUS jobStatus = JOBSTATUS.PLANNED;
     private long backupId;
 
-    protected BackupJob(OperateAccess operateAccess, TaskListAccess taskListAccess, OptimizeAccess optimizeAccess,
-                        ZeebeAccess zeebeAccess, ElasticSearchAccess elasticSearchAccess, OperationLog operationLog) {
-        this.operateAccess = operateAccess;
-        this.taskListAccess = taskListAccess;
-        this.optimizeAccess = optimizeAccess;
-        this.zeebeAccess = zeebeAccess;
-        this.elasticSearchAccess = elasticSearchAccess;
+    protected BackupJob(OperateConnect operateConnect, TaskListConnect taskListConnect, OptimizeConnect optimizeConnect,
+                        ZeebeConnect zeebeConnect, ElasticSearchConnect elasticSearchConnect, OperationLog operationLog) {
+        this.operateConnect = operateConnect;
+        this.taskListConnect = taskListConnect;
+        this.optimizeConnect = optimizeConnect;
+        this.zeebeConnect = zeebeConnect;
+        this.elasticSearchConnect = elasticSearchConnect;
         this.operationLog = operationLog;
     }
 
@@ -35,7 +35,7 @@ public class BackupJob {
         return jobStatus;
     }
 
-    public OperationLog getLog() {
+    public OperationLog getOperationLog() {
         return operationLog;
     }
 
@@ -54,13 +54,16 @@ public class BackupJob {
 
 
         // Keep only applications existing in the cluster
-        List<CamundaApplication> listApplications = List.of(operateAccess, taskListAccess, optimizeAccess)
+        List<CamundaApplication> listApplications = List.of(operateConnect, taskListConnect, optimizeConnect)
                 .stream()
                 .filter(CamundaApplication::exist)
                 .toList();
 
+
+
         // For each application, start the backup
         for (CamundaApplication application : listApplications) {
+            operationLog.operationStep("backup "+application.getComponent().name());
             CamundaApplication.BackupOperation backupOperation = application.backup(backupId, operationLog);
             if (!backupOperation.isOk()) {
                 this.jobStatus = JOBSTATUS.FAILED;
@@ -77,22 +80,22 @@ public class BackupJob {
             application.waitBackup(backupId, operationLog);
         }
 
-        // Stop Zeebe imported
-        operationLog.operationStep("Pause Zeebe");
-        zeebeAccess.pauseExporting(operationLog);
+        // Stop Zeebe imported : force to step 4
+        operationLog.operationStep(4, "Pause Zeebe");
+        zeebeConnect.pauseExporting(operationLog);
 
         // backup Zeebe record
-        operationLog.operationStep("Backup Zeebe Elasticsearch");
-        elasticSearchAccess.esBackup(backupId, operationLog);
+        operationLog.operationStep(5, "Backup Zeebe Elasticsearch");
+        elasticSearchConnect.esBackup(backupId, operationLog);
 
         // backup Zeebe
-        operationLog.operationStep("Backup Zeebe");
-        zeebeAccess.backup(backupId, operationLog);
-        zeebeAccess.monitorBackup(backupId, operationLog);
+        operationLog.operationStep(6, "Backup Zeebe");
+        zeebeConnect.backup(backupId, operationLog);
+        zeebeConnect.monitorBackup(backupId, operationLog);
 
         // Finish? Then stop all restoration pod
-        operationLog.operationStep("Resume Zeebe");
-        zeebeAccess.resumeExporting(operationLog);
+        operationLog.operationStep(7, "Resume Zeebe");
+        zeebeConnect.resumeExporting(operationLog);
 
         operationLog.endOperation();
 

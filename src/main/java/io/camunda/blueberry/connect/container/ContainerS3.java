@@ -1,4 +1,4 @@
-package io.camunda.blueberry.access.container;
+package io.camunda.blueberry.connect.container;
 
 import io.camunda.blueberry.config.BlueberryConfig;
 import org.springframework.stereotype.Component;

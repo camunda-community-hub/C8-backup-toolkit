@@ -1,4 +1,4 @@
-package io.camunda.blueberry.access;
+package io.camunda.blueberry.connect;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

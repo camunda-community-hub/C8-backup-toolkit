@@ -31,7 +31,7 @@ blueberry:
 
     # Define the container used by Zeebe and by ElasticSearch
   container:
-    containerType: s3
+    containerType: azure
     azure:
       containerName: "elasticsearchcontainer"
     s3:

@@ -1,8 +1,8 @@
-package io.camunda.blueberry.access.toolbox;
+package io.camunda.blueberry.connect.toolbox;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.camunda.blueberry.access.ActuatorBackupStatusResponse;
-import io.camunda.blueberry.access.CamundaApplication;
+import io.camunda.blueberry.connect.ActuatorBackupStatusResponse;
+import io.camunda.blueberry.connect.CamundaApplication;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.OperationLog;
 import org.slf4j.Logger;

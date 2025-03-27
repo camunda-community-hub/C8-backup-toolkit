@@ -1,4 +1,4 @@
-package io.camunda.blueberry.access;
+package io.camunda.blueberry.connect;
 
 
 import io.camunda.blueberry.config.BlueberryConfig;
@@ -16,13 +16,13 @@ import java.util.List;
 
 
 @Component
-public class KubernetesAccess  {
-    Logger logger = LoggerFactory.getLogger(KubernetesAccess.class);
+public class KubernetesConnect {
+    Logger logger = LoggerFactory.getLogger(KubernetesConnect.class);
 
     BlueberryConfig blueberryConfig;
     KubernetesClient client = null;
 
-    KubernetesAccess(BlueberryConfig blueberryConfig) {
+    KubernetesConnect(BlueberryConfig blueberryConfig) {
         this.blueberryConfig = blueberryConfig;
     }
 

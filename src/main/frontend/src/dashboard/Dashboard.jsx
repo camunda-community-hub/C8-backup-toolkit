@@ -24,7 +24,7 @@ class Dashboard extends React.Component {
             dashboard: {
                 cluster: {
                     clusterSize: "",
-                    partitions: "",
+                    partitionsCount: "",
                     replicationfactor: "",
                     statusCluster: "ACTIVE"
                 },
@@ -69,7 +69,6 @@ class Dashboard extends React.Component {
     render() {
         // console.log("dashboard.render display="+JSON.stringify(this.state.display));
         return (<div className={"container"}>
-
 
                 <div className="row" style={{width: "100%"}}>
                     <div className="col-md-10">
@@ -127,13 +126,27 @@ class Dashboard extends React.Component {
                                                     {this.state.dashboard.backup.step}
                                                 </div>
                                             }
-                                            {this.state.dashboard.backup.statusBackup !== "INPROGRESS" &&
+                                            {this.state.dashboard.backup.statusBackup === "FAILED" &&
+                                                <div>
+                                                    <Tag type="red">Failed</Tag><br/>
+                                                    {this.state.dashboard.backup.step}
+                                                </div>
+                                            }
+                                            {this.state.dashboard.backup.statusBackup === "" &&
                                                 <Tag type="green">Ready</Tag>}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td>Number of backups</td>
-                                        <td style={{textAlign: "right"}}>{this.state.dashboard.backup.backups}</td>
+                                        <td>Total number of backups</td>
+                                        <td style={{textAlign: "right"}}>{this.state.dashboard.backup.backupsCount}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>backup complete</td>
+                                        <td style={{textAlign: "right"}}>{this.state.dashboard.backup.backupsComplete}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>backup failed</td>
+                                        <td style={{textAlign: "right"}}>{this.state.dashboard.backup.backupsFailed}</td>
                                     </tr>
                                     <tr>
                                         <td>Next execution</td>
@@ -189,9 +202,9 @@ class Dashboard extends React.Component {
                                     <tr>
                                         <td style={{verticalAlign: "middle"}}>Status</td>
                                         <td style={{textAlign: "center"}}>
-                                            {this.state.dashboard.cluster.statusCluster === "ACTIVE" &&
+                                            {this.state.dashboard.cluster.statusCluster === "ACTIF" &&
                                                 <Tag type="green">Started</Tag>}
-                                            {this.state.dashboard.cluster.statusCluster !== "ACTIVE" &&
+                                            {this.state.dashboard.cluster.statusCluster !== "ACTIF" &&
                                                 <Tag type="gray">Pause</Tag>}
                                         </td>
                                     </tr>
@@ -201,10 +214,10 @@ class Dashboard extends React.Component {
                                     </tr>
                                     <tr>
                                         <td>Partitions</td>
-                                        <td style={{textAlign: "right"}}>{this.state.dashboard.cluster.partitions}</td>
+                                        <td style={{textAlign: "right"}}>{this.state.dashboard.cluster.partitionsCount}</td>
                                     </tr>
                                     <tr>
-                                        <td>Cluster Size</td>
+                                        <td>Replication Factor</td>
                                         <td style={{textAlign: "right"}}>{this.state.dashboard.cluster.replicationfactor}</td>
                                     </tr>
                                 </table>

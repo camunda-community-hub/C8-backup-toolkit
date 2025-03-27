@@ -1,6 +1,4 @@
-package io.camunda.blueberry.access;
-
-import io.camunda.zeebe.protocol.management.BackupStatusCode;
+package io.camunda.blueberry.connect;
 
 import java.time.LocalDateTime;
 
@@ -14,24 +12,27 @@ public class BackupInfo {
     public LocalDateTime backupTime;
     public Status status;
 
-    public static Status fromZeebeStatus(BackupStatusCode status) {
+    public static Status fromZeebeStatus(String status) {
         switch (status) {
-            case FAILED -> {
+            case "FAILED" -> {
                 return Status.FAILED;
             }
-            case COMPLETED -> {
+            case "INCOMPLETE" -> {
+                return Status.FAILED;
+            }
+            case "COMPLETED" -> {
                 return Status.COMPLETED;
             }
-            case DOES_NOT_EXIST -> {
+            case "DOES_NOT_EXIST" -> {
                 return Status.UNKNOWN;
             }
-            case IN_PROGRESS -> {
+            case "IN_PROGRESS" -> {
                 return Status.INPROGRESS;
             }
-            case SBE_UNKNOWN -> {
+            case "SBE_UNKNOWN" -> {
                 return Status.UNKNOWN;
             }
-            case NULL_VAL -> {
+            case "NULL_VAL" -> {
                 return Status.UNKNOWN;
             }
             default -> {

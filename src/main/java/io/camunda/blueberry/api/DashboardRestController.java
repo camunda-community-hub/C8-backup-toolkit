@@ -1,8 +1,12 @@
 package io.camunda.blueberry.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.camunda.blueberry.access.ZeebeAccess;
+import io.camunda.blueberry.connect.BackupInfo;
+import io.camunda.blueberry.connect.ZeebeConnect;
 import io.camunda.blueberry.config.ExplorationCluster;
+import io.camunda.blueberry.operation.OperationLog;
+import io.camunda.blueberry.operation.backup.BackupJob;
+import io.camunda.blueberry.operation.backup.BackupManager;
 import io.camunda.blueberry.platform.rule.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +23,12 @@ import java.util.List;
 
 public class DashboardRestController {
     private final ExplorationCluster explorationCluster;
+    private final BackupManager backupManager;
     Logger logger = LoggerFactory.getLogger(DashboardRestController.class);
 
-    public DashboardRestController(ExplorationCluster explorationCluster) {
+    public DashboardRestController(ExplorationCluster explorationCluster, BackupManager backupManager) {
         this.explorationCluster = explorationCluster;
+        this.backupManager = backupManager;
     }
 
     @GetMapping(value = "/api/dashboard/all", produces = "application/json")
@@ -34,7 +40,7 @@ public class DashboardRestController {
                 // Force the refresh
                 explorationCluster.refresh();
             }
-            ZeebeAccess.ClusterInformation clusterInformation = explorationCluster.getClusterInformation();
+            ZeebeConnect.ClusterInformation clusterInformation = explorationCluster.getClusterInformation();
 
             if (clusterInformation != null) {
                 status.cluster.partitionsCount = clusterInformation.partitionsCount;
@@ -45,9 +51,22 @@ public class DashboardRestController {
             Boolean exporterStatus = explorationCluster.getExporterStatus();
             status.cluster.statusCluster = Boolean.TRUE.equals(exporterStatus) ? "ACTIF" : Boolean.FALSE.equals(exporterStatus) ? "DISABLED" : "";
 
-            status.backup.backups = "";
-            status.backup.step = "";
-            status.backup.statusBackup = "ACTIF";
+            List<io.camunda.blueberry.connect.BackupInfo> listBackups = explorationCluster.getListBackup();
+            if (listBackups!=null ) {
+                status.backup.backupsCount = listBackups.size();
+                status.backup.backupsFailed = (int) listBackups.stream().filter(t->t.status.equals(BackupInfo.Status.FAILED)).count();
+                status.backup.backupsComplete = (int) listBackups.stream().filter(t->t.status.equals(BackupInfo.Status.COMPLETED)).count();
+            }
+
+            BackupJob backupJob = backupManager.getBackupJob();
+            status.backup.statusBackup = "READY";
+            if (backupJob != null) {
+                status.backup.statusBackup=    backupJob.getJobStatus().toString();
+                OperationLog operationLog = backupJob.getOperationLog();
+                if (operationLog != null) {}
+                    status.backup.step = operationLog.getCurrentStep()+"/"+operationLog.getTotalNumberOfSteps()+" ("+operationLog.getOperationName()+")";
+            }
+
 
             status.scheduler.statusScheduler = "INACTIF";
             status.scheduler.cron = "";
@@ -66,16 +85,16 @@ public class DashboardRestController {
 
     private class DashboardStatus {
         @JsonProperty
-        ClusterInfo cluster = new ClusterInfo();
+        DashClusterInfo cluster = new DashClusterInfo();
         @JsonProperty
-        BackupInfo backup = new BackupInfo();
+        DashBackupInfo backup = new DashBackupInfo();
         @JsonProperty
-        SchedulerInfo scheduler = new SchedulerInfo();
+        DashSchedulerInfo scheduler = new DashSchedulerInfo();
         @JsonProperty
-        DashboardRestController.ConfigurationInfo configuration = new DashboardRestController.ConfigurationInfo();
+        DashConfigurationInfo configuration = new DashConfigurationInfo();
     }
 
-    private class ClusterInfo {
+    private class DashClusterInfo {
         @JsonProperty
         Integer partitionsCount;
         @JsonProperty
@@ -86,7 +105,7 @@ public class DashboardRestController {
         String statusCluster; // "ACTIVE"
     }
 
-    private class BackupInfo {
+    private class DashBackupInfo {
         @JsonProperty
         List<String> history = new ArrayList<>();
         @JsonProperty
@@ -94,10 +113,14 @@ public class DashboardRestController {
         @JsonProperty
         String step;
         @JsonProperty
-        String backups;
+        Integer backupsCount;
+        @JsonProperty
+        Integer backupsFailed;
+        @JsonProperty
+        Integer backupsComplete;
     }
 
-    private class SchedulerInfo {
+    private class DashSchedulerInfo {
         @JsonProperty
         String statusScheduler; // "INACTIF",
         @JsonProperty
@@ -108,7 +131,7 @@ public class DashboardRestController {
         String delay;
     }
 
-    private class ConfigurationInfo {
+    private class DashConfigurationInfo {
 
         @JsonProperty
         String statusConfiguration;

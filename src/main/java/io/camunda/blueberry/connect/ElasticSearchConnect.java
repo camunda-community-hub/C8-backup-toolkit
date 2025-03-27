@@ -1,8 +1,8 @@
-package io.camunda.blueberry.access;
+package io.camunda.blueberry.connect;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.camunda.blueberry.access.container.Container;
-import io.camunda.blueberry.access.container.ContainerFactory;
+import io.camunda.blueberry.connect.container.Container;
+import io.camunda.blueberry.connect.container.ContainerFactory;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.exception.ElasticsearchException;
 import io.camunda.blueberry.operation.OperationLog;
@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class ElasticSearchAccess {
-    Logger logger = LoggerFactory.getLogger(ElasticSearchAccess.class);
+public class ElasticSearchConnect {
+    Logger logger = LoggerFactory.getLogger(ElasticSearchConnect.class);
 
     BlueberryConfig blueberryConfig;
 
@@ -27,9 +27,9 @@ public class ElasticSearchAccess {
 
     @Autowired
     private RestTemplate restTemplate; // Injected instance
-    private ZeebeAccess zeebeAccess;
+    private ZeebeConnect zeebeConnect;
 
-    public ElasticSearchAccess(BlueberryConfig blueberryConfig, ContainerFactory containerFactory) {
+    public ElasticSearchConnect(BlueberryConfig blueberryConfig, ContainerFactory containerFactory) {
         this.blueberryConfig = blueberryConfig;
         this.containerFactory = containerFactory;
     }

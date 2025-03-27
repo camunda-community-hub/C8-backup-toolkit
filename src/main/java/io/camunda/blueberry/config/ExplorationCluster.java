@@ -1,10 +1,7 @@
 package io.camunda.blueberry.config;
 
 
-import io.camunda.blueberry.access.CamundaApplication;
-import io.camunda.blueberry.access.KubernetesAccess;
-import io.camunda.blueberry.access.OperationResult;
-import io.camunda.blueberry.access.ZeebeAccess;
+import io.camunda.blueberry.connect.*;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.platform.PlatformManager;
 import io.camunda.blueberry.platform.rule.Rule;
@@ -30,7 +27,7 @@ public class ExplorationCluster {
     Logger logger = LoggerFactory.getLogger(ExplorationCluster.class);
 
 
-    private final KubernetesAccess kubernetesAccess;
+    private final KubernetesConnect kubernetesConnect;
 
     private final BlueberryConfig blueberryConfig;
 
@@ -38,18 +35,18 @@ public class ExplorationCluster {
 
     private final RuleOperateRepository ruleOperateRepository;
 
-    private final ZeebeAccess zeebeAccess;
+    private final ZeebeConnect zeebeConnect;
 
-    public ExplorationCluster(KubernetesAccess kubernetesAccess,
+    public ExplorationCluster(KubernetesConnect kubernetesConnect,
                               BlueberryConfig blueberryConfig,
                               PlatformManager platformManager,
                               RuleOperateRepository ruleOperateRepository,
-                              ZeebeAccess zeebeAccess) {
-        this.kubernetesAccess = kubernetesAccess;
+                              ZeebeConnect zeebeConnect) {
+        this.kubernetesConnect = kubernetesConnect;
         this.blueberryConfig = blueberryConfig;
         this.platformManager = platformManager;
         this.ruleOperateRepository = ruleOperateRepository;
-        this.zeebeAccess = zeebeAccess;
+        this.zeebeConnect = zeebeConnect;
     }
 
     public void refresh() {
@@ -60,6 +57,7 @@ public class ExplorationCluster {
     @Scheduled(fixedRate = 300000)  // Run every 5 mn
     private void executeShortExploration() {
         refreshExporterStatus();
+        refreshListBackup();
     }
 
     @PostConstruct
@@ -83,7 +81,7 @@ public class ExplorationCluster {
 
     private Boolean refreshExporterStatus() {
         try {
-            exporterStatus = zeebeAccess.getExporterStatus();
+            exporterStatus = zeebeConnect.getExporterStatus();
         } catch (OperationException e) {
             exporterStatus = null;
             logger.error(e.getMessage(), e);
@@ -95,20 +93,40 @@ public class ExplorationCluster {
         return exporterStatus;
     }
 
+    /* ******************************************************************** */
+    /*                                                                      */
+    /*  backup list                                                         */
+    /*                                                                      */
+    /* ******************************************************************** */
+    private List<BackupInfo> listBackups;
+
+    private List<BackupInfo> refreshListBackup() {
+        try {
+            listBackups = zeebeConnect.getListBackup();
+        } catch (OperationException e) {
+            listBackups = null;
+            logger.error(e.getMessage(), e);
+        }
+        return listBackups;
+    }
+
+    public List<BackupInfo> getListBackup() {
+        return listBackups;
+    }
 
     /* ******************************************************************** */
     /*                                                                      */
     /*  ClusterInformation                                                  */
     /*                                                                      */
     /* ******************************************************************** */
-    private ZeebeAccess.ClusterInformation clusterInformation;
+    private ZeebeConnect.ClusterInformation clusterInformation;
 
-    private ZeebeAccess.ClusterInformation refreshClusterInformation() {
-        clusterInformation = zeebeAccess.getClusterInformation();
+    private ZeebeConnect.ClusterInformation refreshClusterInformation() {
+        clusterInformation = zeebeConnect.getClusterInformation();
         return clusterInformation;
     }
 
-    public ZeebeAccess.ClusterInformation getClusterInformation() {
+    public ZeebeConnect.ClusterInformation getClusterInformation() {
         return clusterInformation;
     }
 
@@ -123,13 +141,13 @@ public class ExplorationCluster {
     private Map<CamundaApplication.COMPONENT, Object> refeshRepositoryComponent() {
         // namespace never change, so when we get it, save it
         if (namespace == null) {
-            namespace = kubernetesAccess.getCurrentNamespace();
+            namespace = kubernetesConnect.getCurrentNamespace();
             if (namespace == null) {
                 namespace = blueberryConfig.getNamespace();
             }
         }
 
-        kubernetesAccess.connection();
+        kubernetesConnect.connection();
         // Component are present?
 
 
@@ -139,7 +157,7 @@ public class ExplorationCluster {
                 // is this component is part of the cluster?
 
                 // Yes, then get the list
-                repositoryPerComponent.put(CamundaApplication.COMPONENT.OPERATE, kubernetesAccess.getRepositoryNameV2(CamundaApplication.COMPONENT.OPERATE, namespace));
+                repositoryPerComponent.put(CamundaApplication.COMPONENT.OPERATE, kubernetesConnect.getRepositoryNameV2(CamundaApplication.COMPONENT.OPERATE, namespace));
             } catch (Exception e) {
                 logger.error("Can't get result per component {}", e.getMessage());
             }

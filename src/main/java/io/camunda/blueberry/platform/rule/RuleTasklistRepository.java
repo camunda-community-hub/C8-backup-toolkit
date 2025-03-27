@@ -1,7 +1,7 @@
 package io.camunda.blueberry.platform.rule;
 
 
-import io.camunda.blueberry.access.*;
+import io.camunda.blueberry.connect.*;
 import io.camunda.blueberry.config.BlueberryConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -18,10 +18,10 @@ public class RuleTasklistRepository implements Rule {
     BlueberryConfig blueberryConfig;
 
     @Autowired
-    KubernetesAccess kubernetesAccess;
+    KubernetesConnect kubernetesConnect;
 
     @Autowired
-    ElasticSearchAccess elasticSearchAccess;
+    ElasticSearchConnect elasticSearchConnect;
 
     @Override
     public boolean validRule() {
@@ -70,7 +70,7 @@ public class RuleTasklistRepository implements Rule {
             // the rule is in progress
             ruleInfo.setStatus(RuleStatus.INPROGRESS);
             String tasklistRepository = null;
-            OperationResult operationResult = kubernetesAccess.getRepositoryName(CamundaApplication.COMPONENT.TASKLIST, blueberryConfig.getNamespace());
+            OperationResult operationResult = kubernetesConnect.getRepositoryName(CamundaApplication.COMPONENT.TASKLIST, blueberryConfig.getNamespace());
             if (!operationResult.success) {
                 ruleInfo.addDetails("Can't access the Repository name in the pod, or does not exist");
                 ruleInfo.addDetails(operationResult.details);
@@ -86,7 +86,7 @@ public class RuleTasklistRepository implements Rule {
             //------------ Second step, verify if the repository exist in elasticSearch
             if (ruleInfo.inProgress()) {
                 // now check if the repository exist in Elastic search
-                operationResult = elasticSearchAccess.existRepository(tasklistRepository);
+                operationResult = elasticSearchConnect.existRepository(tasklistRepository);
                 accessElasticsearchRepository = operationResult.resultBoolean;
                 ruleInfo.addVerifications("Check Elasticsearch repository [" + tasklistRepository + "] :"
                                 + operationResult.details,
@@ -110,7 +110,7 @@ public class RuleTasklistRepository implements Rule {
             // Third step, create the repository if asked
             if (execute && ruleInfo.inProgress()) {
 
-                operationResult = elasticSearchAccess.createRepository(tasklistRepository,
+                operationResult = elasticSearchConnect.createRepository(tasklistRepository,
                         blueberryConfig.getContainerType(),
                         blueberryConfig.getTasklistContainerBasePath());
                 if (operationResult.success) {

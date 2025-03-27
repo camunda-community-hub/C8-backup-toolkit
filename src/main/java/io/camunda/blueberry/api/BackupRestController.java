@@ -1,8 +1,10 @@
 package io.camunda.blueberry.api;
 
-import io.camunda.blueberry.access.BackupInfo;
-import io.camunda.blueberry.access.ZeebeAccess;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.camunda.blueberry.connect.BackupInfo;
+import io.camunda.blueberry.connect.ZeebeConnect;
 import io.camunda.blueberry.exception.OperationException;
+import io.camunda.blueberry.operation.OperationLog;
 import io.camunda.blueberry.operation.backup.BackupJob;
 import io.camunda.blueberry.operation.backup.BackupManager;
 import org.slf4j.Logger;
@@ -19,12 +21,12 @@ import java.util.Map;
 
 public class BackupRestController {
 
-    private final ZeebeAccess zeebeAccess;
+    private final ZeebeConnect zeebeConnect;
     private final BackupManager backupManager;
     Logger logger = LoggerFactory.getLogger(BackupRestController.class);
 
-    public BackupRestController(ZeebeAccess zeebeAccess, BackupManager backupManager) {
-        this.zeebeAccess = zeebeAccess;
+    public BackupRestController(ZeebeConnect zeebeConnect, BackupManager backupManager) {
+        this.zeebeConnect = zeebeConnect;
         this.backupManager = backupManager;
     }
 
@@ -49,11 +51,24 @@ public class BackupRestController {
     }
 
     @GetMapping(value = "/api/backup/monitor", produces = "application/json")
-    public Map<String, Object> monitorBackup() {
+    public MonitorStatus monitorBackup() {
+
+        MonitorStatus monitorStatus = new MonitorStatus();
+        monitorStatus.statusBackup = "";
         BackupJob backupJob = backupManager.getBackupJob();
-        Map<String, Object> status = new HashMap<>();
-        status.put("statusOperation", backupJob == null ? "" : backupJob.getJobStatus().toString());
-        return status;
+
+        if (backupJob != null) {
+            monitorStatus.statusBackup = backupJob.getJobStatus().toString();
+            OperationLog operationLog = backupJob.getOperationLog();
+            if (operationLog != null) {
+                monitorStatus.step = operationLog.getCurrentStep();
+                monitorStatus.totalNumberOfSteps = operationLog.getTotalNumberOfSteps();
+                monitorStatus.operationName = operationLog.getOperationName();
+                monitorStatus.stepName = operationLog.getStepName();
+            }
+        }
+
+        return monitorStatus;
     }
 
 
@@ -68,7 +83,7 @@ public class BackupRestController {
         Map<String, Object> result = new HashMap<>();
         try {
             logger.debug("Rest [/api/backup/list]");
-            List<BackupInfo> listBackup = zeebeAccess.getListBackup();
+            List<BackupInfo> listBackup = zeebeConnect.getListBackup();
 
             logger.info("Rest [/api/backup/list] found {} backups", listBackup.size());
 
@@ -90,5 +105,18 @@ public class BackupRestController {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private class MonitorStatus {
+        @JsonProperty
+        String statusBackup;
+        @JsonProperty
+        int step;
+        @JsonProperty
+        int totalNumberOfSteps;
+        @JsonProperty
+        String operationName;
+        @JsonProperty
+        String stepName;
     }
 }

@@ -1,8 +1,8 @@
 package io.camunda.blueberry.api;
 
 
-import io.camunda.blueberry.access.KubernetesAccess;
-import io.camunda.blueberry.access.OperationResult;
+import io.camunda.blueberry.connect.KubernetesConnect;
+import io.camunda.blueberry.connect.OperationResult;
 import io.camunda.blueberry.config.BlueberryConfig;
 import io.camunda.blueberry.config.ExplorationCluster;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.Map;
 public class ExplorationRestController {
 
     @Autowired
-    KubernetesAccess kubernetesAccess;
+    KubernetesConnect kubernetesConnect;
 
     @Autowired
     BlueberryConfig blueberryConfig;

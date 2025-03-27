@@ -1,7 +1,7 @@
 package io.camunda.blueberry.operation.backup;
 
 
-import io.camunda.blueberry.access.*;
+import io.camunda.blueberry.connect.*;
 import io.camunda.blueberry.exception.BackupException;
 import io.camunda.blueberry.exception.OperationException;
 import io.camunda.blueberry.operation.OperationLog;
@@ -16,20 +16,20 @@ import java.util.List;
  */
 @Component
 public class BackupManager {
-    private final ElasticSearchAccess elasticSearchAccess;
+    private final ElasticSearchConnect elasticSearchConnect;
     Logger logger = LoggerFactory.getLogger(BackupManager.class);
-    final OperateAccess operateAccess;
-    final TaskListAccess taskListAccess;
-    final OptimizeAccess optimizeAccess;
-    final ZeebeAccess zeebeAccess;
+    final OperateConnect operateConnect;
+    final TaskListConnect taskListConnect;
+    final OptimizeConnect optimizeConnect;
+    final ZeebeConnect zeebeConnect;
     private BackupJob backupJob;
 
-    public BackupManager(OperateAccess operateAccess, TaskListAccess taskListAccess, OptimizeAccess optimizeAccess, ZeebeAccess zeebeAccess, ElasticSearchAccess elasticSearchAccess) {
-        this.operateAccess = operateAccess;
-        this.taskListAccess = taskListAccess;
-        this.optimizeAccess = optimizeAccess;
-        this.zeebeAccess = zeebeAccess;
-        this.elasticSearchAccess = elasticSearchAccess;
+    public BackupManager(OperateConnect operateConnect, TaskListConnect taskListConnect, OptimizeConnect optimizeConnect, ZeebeConnect zeebeConnect, ElasticSearchConnect elasticSearchConnect) {
+        this.operateConnect = operateConnect;
+        this.taskListConnect = taskListConnect;
+        this.optimizeConnect = optimizeConnect;
+        this.zeebeConnect = zeebeConnect;
+        this.elasticSearchConnect = elasticSearchConnect;
     }
 
     public synchronized void startBackup(BackupParameter backupParameter) throws OperationException {
@@ -37,7 +37,7 @@ public class BackupManager {
         if (backupJob != null && backupJob.getJobStatus() == BackupJob.JOBSTATUS.INPROGRESS)
             throw new BackupException(null, 400, "Job Already in progress", "In Progress[" + backupJob.getBackupId() + "]", backupJob.getBackupId());
         // start a backup, asynchrously
-        backupJob = new BackupJob(operateAccess, taskListAccess, optimizeAccess, zeebeAccess, elasticSearchAccess, new OperationLog());
+        backupJob = new BackupJob(operateConnect, taskListConnect, optimizeConnect, zeebeConnect, elasticSearchConnect, new OperationLog());
         Long backupId = backupParameter.backupId;
         if (backupParameter.nextId) {
             logger.info("No backup is provided, calculate the new Id");
@@ -57,16 +57,26 @@ public class BackupManager {
             backupId = maxId + 1;
             logger.info("No backupId is provided, calculate from the list +1 : {}", backupId);
         }
-        backupJob.backup(backupId);
+        // Start in a new thread
+        startBackupAsynchronously(backupId);
+
     }
 
+    private void startBackupAsynchronously(final long backupId) throws BackupException {
+        new Thread(() -> {
+            try {
+                backupJob.backup(backupId);
+            } catch (BackupException e) {
+               logger.error("BackupId["+backupId+"] failed", e);
+            }
+        }).start();    }
     /**
      * Return the list of all backups visible on the platform
      *
      * @return
      */
     public List<BackupInfo> getListBackup() throws OperationException {
-        return zeebeAccess.getListBackup();
+        return zeebeConnect.getListBackup();
     }
 
     /**

@@ -26,7 +26,7 @@ public class ConfigurationRestController {
     /**
      * Check the system
      * Does Zeebe declare a container? A Type storage?
-     * Does Elasticsearch as repository for each component like OperateAccess?
+     * Does Elasticsearch as repository for each component like OperateConnect?
      *
      * @return
      */

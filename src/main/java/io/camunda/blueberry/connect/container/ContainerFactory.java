@@ -1,4 +1,4 @@
-package io.camunda.blueberry.access.container;
+package io.camunda.blueberry.connect.container;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

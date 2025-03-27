@@ -1,6 +1,6 @@
 package io.camunda.blueberry.exception;
 
-import io.camunda.blueberry.access.CamundaApplication;
+import io.camunda.blueberry.connect.CamundaApplication;
 
 import java.util.HashMap;
 import java.util.Map;

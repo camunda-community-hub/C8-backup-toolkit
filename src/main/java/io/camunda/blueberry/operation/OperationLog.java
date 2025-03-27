@@ -12,6 +12,7 @@ public class OperationLog {
     private String operationName;
     private int totalNumberOfSteps;
     private int currentStep;
+    private String stepName;
     private long operationBeginTime;
 
     public OperationLog() {
@@ -38,6 +39,13 @@ public class OperationLog {
      */
     public void operationStep(String stepName) {
         this.currentStep++;
+        this.stepName= stepName;
+        info("Operation[" + operationName + "/" + stepName + "] : " + currentStep + "/" + totalNumberOfSteps);
+    }
+
+    public void operationStep(int forceStep, String stepName) {
+        this.currentStep=forceStep;
+        this.stepName= stepName;
         info("Operation[" + operationName + "/" + stepName + "] : " + currentStep + "/" + totalNumberOfSteps);
     }
 
@@ -83,6 +91,22 @@ public class OperationLog {
         }
         listSnapshop.add(snapshotName);
         snapshotPerComponents.put(component, listSnapshop);
+    }
+
+    public String getOperationName() {
+        return operationName;
+    }
+
+    public int getTotalNumberOfSteps() {
+        return totalNumberOfSteps;
+    }
+
+    public int getCurrentStep() {
+        return currentStep;
+    }
+
+    public String getStepName() {
+        return stepName;
     }
 
     enum Type {INFO, WARNING, ERROR}

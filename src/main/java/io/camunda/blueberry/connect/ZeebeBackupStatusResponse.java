@@ -1,4 +1,4 @@
-package io.camunda.blueberry.access;
+package io.camunda.blueberry.connect;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 

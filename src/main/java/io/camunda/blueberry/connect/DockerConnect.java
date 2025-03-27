@@ -1,4 +1,4 @@
-package io.camunda.blueberry.access;
+package io.camunda.blueberry.connect;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.Image;
@@ -9,7 +9,7 @@ import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 import java.util.List;
 
 
-public class DockerAccessAPI {
+public class DockerConnect {
 
     public void getPodInformation(String podName, String namespace) {
 

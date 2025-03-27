@@ -55,7 +55,7 @@ public class BlueberryConfig {
     private String zeebeRecordRepository;
 
     /**
-     * These values are temporary. KubernetesAccess should get that values directly from pôds
+     * These values are temporary. KubernetesConnect should get that values directly from pôds
      */
     @Value("${blueberry.operateRepository}")
     private String operateRepository;
