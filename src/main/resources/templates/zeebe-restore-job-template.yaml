@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: zeebe-restore-job-${brokerId}
+spec:
+  template:
+    spec:
+      containers:
+        - name: zeebe-restore
+          image: camunda/zeebe:${zeebeVersion} # Adjust based on your Zeebe version
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              #!/bin/bash
+              ls -lAR /usr/local/zeebe/data
+              rm -rf /usr/local/zeebe/data/{*,.*}
+              echo "Starting restoration process..."
+              if [ -z "$(ls -A /usr/local/zeebe/data)" ]; then
+                /usr/local/zeebe/bin/restore --backupId="${ZEEBE_RESTORE_FROM_BACKUP_ID}" && echo "Restoration complete."
+              else
+                echo "ERROR: Could not delete zeebe data" >&2
+                exit 1
+              fi
+          env:
+            - name: ZEEBE_RESTORE_FROM_BACKUP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backup-timeid
+                  key: backupTimeId
+            - name: ZEEBE_BROKER_DATA_BACKUP_STORE
+              value: "S3"
+            - name: ZEEBE_BROKER_DATA_BACKUP_S3_BUCKETNAME
+              value: "${s3BucketName}"
+            - name: ZEEBE_BROKER_DATA_BACKUP_S3_BASEPATH
+              value: "${s3BasePath}"
+            - name: ZEEBE_BROKER_DATA_BACKUP_S3_REGION
+              value: "${s3Region}"
+            - name: ZEEBE_BROKER_CLUSTER_NODEID
+              value: "${nodeId}"
+            - name: ZEEBE_BROKER_CLUSTER_PARTITIONSCOUNT
+              value: "${partitionsCount}"
+            - name: ZEEBE_BROKER_CLUSTER_CLUSTERSIZE
+              value: "${clusterSize}"
+            - name: ZEEBE_BROKER_CLUSTER_REPLICATIONFACTOR
+              value: "${replicationFactor}"
+          volumeMounts:
+            - name: data
+              mountPath: /usr/local/zeebe/data
+      securityContext:
+        fsGroup: 1000
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ${pvcName}
+      restartPolicy: OnFailure

@@ -193,4 +193,21 @@ public class KubernetesConnect {
             throw new RuntimeException("Failed to retrieve token", e);
         }
     }
+
+    public int getReplicaCount(String componentName) {
+        switch (componentName) {
+            case "camunda-zeebe":
+                return blueberryConfig.getCamundaZeebeReplicas();
+            case "camunda-zeebe-gateway":
+                return blueberryConfig.getCamundaZeebeGatewayReplicas();
+            case "camunda-operate":
+                return blueberryConfig.getCamundaOperateReplicas();
+            case "camunda-tasklist":
+                return blueberryConfig.getCamundaTasklistReplicas();
+            case "camunda-optimize":
+                return blueberryConfig.getCamundaOptimizeReplicas();
+            default:
+                throw new IllegalArgumentException("Unknown component: " + componentName);
+        }
+    }
 }

@@ -38,6 +38,15 @@ blueberry:
       bucket: "joeymanagementbucket"
       region: "us-east-2"
 
+  replicas:
+    zeebe-version: 8.5.7
+    camunda-zeebe: 3
+    camunda-zeebe-gateway: 1
+    camunda-operate: 1
+    camunda-tasklist: 1
+    camunda-optimize: 1
+    partition-count: 3
+    replication-factor: 3
 
 
 server:

@@ -87,6 +87,29 @@ public class BlueberryConfig {
     @Value("${blueberry.container.s3.region:}")
     private String s3Region;
 
+    @Value("blueberry.replicas.camunda-zeebe")
+    private int camundaZeebeReplicas;
+
+    @Value("${blueberry.replicas.camunda-zeebe-gateway}")
+    private int camundaZeebeGatewayReplicas;
+
+    @Value("${blueberry.replicas.camunda-operate}")
+    private int camundaOperateReplicas;
+
+    @Value("${blueberry.replicas.camunda-tasklist}")
+    private int camundaTasklistReplicas;
+
+    @Value("${blueberry.replicas.camunda-optimize}")
+    private int camundaOptimizeReplicas;
+
+    @Value("${blueberry.replicas.replication-factor}")
+    private int camundaReplicationFactor;
+
+    @Value("${blueberry.replicas.partition-count}")
+    private int camundaPartitionCount;
+
+    @Value("${blueberry.replicas.zeebe-version}")
+    private int zeebeVersion;
 
     // Getters for general properties
     public String getOptimizeActuatorUrl() {
@@ -174,8 +197,14 @@ public class BlueberryConfig {
         return s3Region;
     }
 
-
-
+    public int getCamundaZeebeReplicas() {return camundaZeebeReplicas;}
+    public int getCamundaZeebeGatewayReplicas() {return camundaZeebeGatewayReplicas;}
+    public int getCamundaOperateReplicas() {return camundaOperateReplicas;}
+    public int getCamundaTasklistReplicas() {return camundaTasklistReplicas;}
+    public int getCamundaOptimizeReplicas() {return camundaOptimizeReplicas;}
+    public int getCamundaReplicationFactor() {return camundaReplicationFactor;}
+    public int getCamundaPartitionCount() {return camundaPartitionCount;}
+    public int getZeebeVersion() {return zeebeVersion;}
 
     /**
      * Access all configuration variables and return it dynamically.
